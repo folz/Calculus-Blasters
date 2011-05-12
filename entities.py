@@ -8,9 +8,6 @@ import math, pygame, sys
 from pygame.locals import *
 from engine import *
 
-
-
-
 class BulletEntity( entity.Entity ):
 	'''
 	A Bullet is something you shoot. It is handled by a BulletManager

@@ -7,7 +7,7 @@ Created on Jun 30, 2010
 from engine.Net import netbase
 import pickle, random, socket, threading
 
-class StoneServer( netbase.TCPServer ):
+class Server( netbase.TCPServer ):
 	def __init__( self ):
 		netbase.TCPServer.__init__( self )
 		self.ip = socket.gethostbyname( socket.gethostname( ) )
@@ -73,4 +73,4 @@ class Client:
 			self.stone( data )
 
 if __name__ == "__main__":
-	s = StoneServer()
+	s = Server()

@@ -1,5 +1,5 @@
 '''
-Created on Jun 23, 2010
+Created on May 12, 2011
 
 @author: folz
 '''
@@ -9,37 +9,13 @@ from pygame.locals import *
 from engine import *
 from engine.misc import *
 
-import multiplayer
-import managers
-import entities
+class Game:
+	def __init__(self, size=(0, 0), ):
+		self.size = size
+		
 
 id = int ( input ( "id? " ) )
 player2 = None
-
-def useData( data ):
-	global id, player2
-	if not player2:
-		return
-	if data is None:
-		return
-	if data.pId != id:
-		#print(data)
-		player2.location = geometry.Vector( data.px, data.py )
-		player2.setFacing( data.pf )
-		if id == 2:
-			flag.setFacing( data.ff )
-			flag2.updateScore( data.s )
-			if data.fc: flag.wasCapturedBy( player2 )
-			elif not data.fc: flag.release()
-		else:
-			flag2.setFacing( data.ff )
-			flag.updateScore( data.s )
-			if data.fc: flag2.wasCapturedBy( player2 )
-			elif not data.fc: flag2.release()
-		#networkBullets.fromNetwork(data.bullets)
-		for b in data.bullets:
-			player2.gun.addBullet( ( b[0], b[1] ), ( b[2], b[3] ) )
-		if data.hit: player.wasHit()
 
 svrip = input ( "server ip? " )
 client = multiplayer.Client( svrip, useData )
@@ -59,6 +35,19 @@ helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 clock = pygame.time.Clock()
 keys = {pygame.K_ESCAPE : False, pygame.K_LEFT : False, pygame.K_RIGHT : False, pygame.K_z : False, pygame.K_x : False}
 
+
+#load the tile data
+#tiles = [pygame.image.load('data\\block%d.png' % n).convert() for n in range(4)]
+#tileWidth, tileHeight = tiles[0].get_size()
+
+# get the value of every char c in every string s in the map file
+#tileData = [[int(c) for c in s[0:-1]] for s in open(os.path.join("data", "map.gen")).readlines()]
+
+# create the world that everything will be rendered in
+# because of parallax scrolling, make sure the world is 4/5 the background
+
+# create the world we'll be rendering entities on
+#world = World((len(tileData[0]) * tileWidth, len(tileData) * tileHeight))
 world = world.World( ( 2000, 2000 ) )
 world.set_background( "giantbg.png" )
 world.set_gravity( geometry.Vector( 0, 1 ) )
