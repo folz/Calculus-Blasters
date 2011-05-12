@@ -28,7 +28,7 @@ class StoneServer( netbase.TCPServer ):
 		self.send_data( data )
 
 	def kill( self ):
-		self.quit( )
+		self.quit()
 
 class Data:
 	def __init__( self, playerX, playerY, bullets, id, hit, playerFacing, flagFace, score, flagCapured ):
