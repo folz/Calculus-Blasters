@@ -96,6 +96,8 @@ class World( pygame.Surface, pygame.sprite.Group ):
 			for terrain in self.get_terrain():
 				terrain.debug()
 		for entity in self.sprites():
+			entity.velocity += self.gravity
+
 			entity.move( delta )
 			if entity.is_on_screen():
 				entity.draw()

@@ -11,7 +11,7 @@ import multiplayer
 import managers
 import entities
 
-class WeatheredStone:
+class CalculusBlasters:
 	def __init__( self, id, svrip ):
 		pygame.init()
 
@@ -32,6 +32,7 @@ class WeatheredStone:
 		self.helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 
 		self.clock = pygame.time.Clock()
+		
 		self.keys = {
 			pygame.K_ESCAPE : False,
 			pygame.K_LEFT : False,
@@ -53,10 +54,10 @@ class WeatheredStone:
 		# create a player1 character
 		if self.id == 1:
 			self.player1 = entities.PlayerEntity( "blue", ( 1940, 1940 ) )
-			self.player2 = entities.PlayerEntity( "red", ( 100, 100 ), "green-soldier.png" )
+			self.player2 = entities.PlayerEntity( "red", ( 100, 100 ), "rocketplok.gif" )
 		elif self.id == 2:
 			self.player1 = entities.PlayerEntity( "red", ( 100, 100 ) )
-			self.player2 = entities.PlayerEntity( "blue", ( 1940, 1940 ), "green-soldier.png" )
+			self.player2 = entities.PlayerEntity( "blue", ( 1940, 1940 ), "rocketplok.gif" )
 
 		self.world.add_entity( self.player1, attrs="player" )
 		self.world.set_entity_name( self.player1, "player1" )
@@ -76,9 +77,7 @@ class WeatheredStone:
 		self.viewport.follow( self.player1 )
 
 		self.running = True
-		self.scrollX = 4
-		self.scrollY = 4
-
+		
 		self.delta = 0.0
 
 		self.makeTerrain()
@@ -91,8 +90,8 @@ class WeatheredStone:
 			return
 		if data is None:
 			return
-		if data.pId != id:
-			#print(data)
+		if data.pId != self.id:
+			print(data)
 			self.player2.location = geometry.Vector( data.px, data.py )
 			self.player2.set_facing( data.pf )
 			if self.id == 2:
@@ -133,94 +132,6 @@ class WeatheredStone:
 
 		bottomWall = geometry.Slope( [( 0, self.world.get_height() ), ( self.world.get_width(), self.world.get_height() )] )
 		self.world.add_terrain( bottomWall )
-
-		#top level
-		p = geometry.Terrain( [( 1350, 350 ), ( 1500, 350 ), ( 1500, 250 )], self.world )
-		self.world.add_terrain( p )
-		p = geometry.Terrain( [( 700, 200 ), ( 1050, 350 ), ( 1050, 400 ), ( 700, 250 )], self.world )
-		self.world.add_terrain( p )
-
-		self.createBlock( 1700, 1900, 100, 100 )
-		self.createBlock( 1900, 1800, 100, 100 )
-		self.createBlock( 1500, 1800, 500, 20 )
-		self.createBlock( 0, 200, 300, 60 )
-		self.createBlock( 200, 0, 50, 80 )
-		self.createBlock( 300, 150, 50, 50 )
-		self.createBlock( 300, 200, 400, 50 )
-		self.createBlock( 1050, 350, 850, 50 )
-		self.createBlock( 1500, 250, 100, 100 )
-		self.createBlock( 1800, 200, 150, 50 )
-		self.createBlock( 1200, 125, 150, 50 )
-
-		#second
-		self.createBlock( 800, 500, 1300, 50 )
-		self.createBlock( 800, 450, 75, 75 )
-		self.createBlock( 0, 500, 600, 50 )
-		self.createBlock( 700, 650, 100, 50 )
-
-		self.createBlock( 0, 800, 1600, 60 )
-		self.createBlock( 1700, 800, 400, 60 )
-		self.createBlock( 400, 740, 50, 60 )
-		self.createBlock( 600, 600, 100, 50 )
-		self.createBlock( 1800, 750, 50, 50 )
-		self.createBlock( 200, 700, 100, 50 )
-		self.createBlock( 400, 750, 50, 50 )
-		self.createBlock( 1800, 700, 100, 50 )
-		self.createBlock( 1200, 700, 75, 40 )
-		self.createBlock( 1000, 750, 50, 50 )
-		self.createBlock( 850, 740, 100, 40 )
-		self.createBlock( 150, 375, 200, 50 )
-
-		self.createBlock( 0, 920, 250, 50 )
-		self.createBlock( 300, 920, 400, 50 )
-		self.createBlock( 780, 920, 1000, 50 )
-		self.createBlock( 500, 890, 20, 30 )
-
-		self.createBlock( 50, 1050, 1950, 30 )
-		self.createBlock( 300, 1030, 20, 20 )
-		self.createBlock( 600, 1020, 30, 30 )
-		self.createBlock( 1200, 1030, 20, 50 )
-
-		self.createBlock( 0, 1150, 500, 20 )
-		self.createBlock( 550, 1150, 1500, 20 )
-		self.createBlock( 300, 1130, 30, 20 )
-		self.createBlock( 800, 1120, 50, 30 )
-		self.createBlock( 1400, 1120, 20, 30 )
-
-		self.createBlock( 0, 1300, 1950, 20 )
-		self.createBlock( 200, 1220, 100, 20 )
-		self.createBlock( 100, 1270, 30, 30 )
-		self.createBlock( 500, 1220, 250, 20 )
-		self.createBlock( 800, 1260, 40, 40 )
-		self.createBlock( 1200, 1270, 30, 30 )
-		self.createBlock( 1600, 1220, 60, 10 )
-
-		self.createBlock( 0, 1500, 750, 20 )
-		self.createBlock( 800, 1500, 1200, 20 )
-		self.createBlock( 200, 1400, 120, 15 )
-		self.createBlock( 470, 1420, 100, 15 )
-		self.createBlock( 750, 1410, 86, 15 )
-		self.createBlock( 1200, 1400, 130, 15 )
-		self.createBlock( 1600, 1400, 80, 15 )
-		self.createBlock( 100, 1450, 50, 50 )
-		self.createBlock( 350, 1460, 40, 40 )
-		self.createBlock( 940, 1480, 20, 20 )
-		self.createBlock( 1300, 1450, 50, 50 )
-		self.createBlock( 1700, 1470, 30, 30 )
-		self.createBlock( 1800, 1400, 200, 20 )
-
-		self.createBlock( 0, 1750, 300, 20 )
-		self.createBlock( 350, 1750, 1000, 20 )
-		self.createBlock( 1400, 1750, 600, 20 )
-		self.createBlock( 200, 1730, 20, 20 )
-		self.createBlock( 600, 1680, 150, 20 )
-		self.createBlock( 1200, 1700, 50, 50 )
-		self.createBlock( 1600, 1650, 100, 20 )
-		self.createBlock( 1800, 1720, 30, 30 )
-		self.createBlock( 750, 1600, 200, 20 )
-
-		self.createBlock( 0, 1850, 600, 20 )
-		self.createBlock( 300, 1840, 20, 20 )
 
 	def handle_keys( self, keyEvent ):
 		key = keyEvent.key
@@ -283,7 +194,7 @@ class WeatheredStone:
 			self.player1.velocity.x += .6
 
 		if self.keys[pygame.K_z]:
-			self.player1.startJumping()
+			self.player1.start_jumping()
 
 		if self.keys[pygame.K_x]:
 			self.player1.shoot()
@@ -305,5 +216,4 @@ class WeatheredStone:
 if __name__ == "__main__":
 	id = int ( input ( "id? " ) )
 	svrip = input ( "server ip? " )
-	WeatheredStone = WeatheredStone( id, svrip )
-
+	CalculusBlasters( id, svrip )

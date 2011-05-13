@@ -1,7 +1,7 @@
 '''
-Created on Jun 22, 2010
+geometry.py
 
-@author: catapult
+A basic geometry library for the Genesis engine 
 '''
 
 import math, pygame
