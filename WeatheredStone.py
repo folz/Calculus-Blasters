@@ -18,6 +18,7 @@ class WeatheredStone:
 		self.id = id
 		self.svrip = svrip
 		self.client = multiplayer.Client( self.svrip, self.useData )
+		self.player2 = None
 
 		# set the dimensions of the display window
 		self.SIZE = self.WIDTH, self.HEIGHT = 800, 600
@@ -87,6 +88,8 @@ class WeatheredStone:
 			self.game_loop( )
 
 	def useData( self, data ):
+		if self.player2 is None:
+			return
 		if data is None:
 			return
 		if data.pId != id:
