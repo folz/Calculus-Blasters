@@ -301,6 +301,5 @@ class WeatheredStone:
 
 if __name__ == "__main__":
 	id = int ( input ( "id? " ) )
-	#svrip = input ( "server ip? " )
-	WeatheredStone = WeatheredStone( id, "192.168.56.1" )
-
+	svrip = input ( "server ip? " )
+	WeatheredStone = WeatheredStone( id, svrip )

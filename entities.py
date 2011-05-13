@@ -138,7 +138,7 @@ class FlagEntity( entity.Entity ):
 				else:
 					mtd = self.boundingPoly.collide( player.boundingPoly )
 					if mtd != False and player.hasFlag and self.captured == False:
-						player1.flag1.release()
+						player.flag1.release()
 						self.score += 1
 						print( "SCORED" )
 

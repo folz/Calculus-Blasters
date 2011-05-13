@@ -6,13 +6,24 @@ class TCPServer():
 	def __init__(self):
 		self.sending_socket = None
 
-	def input_func(self,sock,host,port,address):pass
-	def output_func(self,sock,host,port,address):pass
-	def connect_func(self,sock,host,port):pass
-	def client_connect_func(self,sock,host,port,address):pass
-	def client_disconnect_func(self,sock,host,port,address):pass
-	def quit_func(self,host,port):pass
-		
+	def input_func(self,sock,host,port,address):
+		pass
+	
+	def output_func(self,sock,host,port,address):
+		pass
+	
+	def connect_func(self,sock,host,port):
+		pass
+	
+	def client_connect_func(self,sock,host,port,address):
+		pass
+	
+	def client_disconnect_func(self,sock,host,port,address):
+		pass
+	
+	def quit_func(self,host,port):
+		pass
+	
 	def connect(self,host,port):
 		self.host = host
 		self.port = port
@@ -22,7 +33,7 @@ class TCPServer():
 			self.unconnected_socket.listen(5)
 		except:
 			self.unconnected_socket.close()
-			raise ServerError("Only one instance of the server on port "+str(self.port)+" may run at one time!")
+			raise ServerError("Only one instance of the server on port {0} may run at one time!".format(self.port))
 		self.connect_func(self.unconnected_socket,self.host,self.port)
 		self.connected_sockets = []
 		self.socketaddresses = {}
@@ -58,6 +69,7 @@ class TCPServer():
 					
 	def handle_data(self,data):
 		pass
+	
 	def send_data(self,data,compress=False):
 		try:
 			for theSocket in self.connected_sockets:
