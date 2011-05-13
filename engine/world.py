@@ -84,13 +84,14 @@ class World( pygame.Surface, pygame.sprite.Group ):
 					self.attributes[attr].append(object)
 				except:
 					self.attributes[attr] = [object]
-						
+
 	def add_terrain( self, object ):
 		self.terrain.append( object )
 		object.set_world_callback( self )
 
 	def redraw( self, delta ):
-		self.blit( self.background, ( 0, 0 ), self.viewport.get_size() )
+		#note to self - parallax scrolling is determined by the second and third arguments to blit
+		self.blit( self.background, ( self.viewport.xCoord, self.viewport.yCoord ), self.viewport.get_size() )
 		self.delta = delta
 		if self.debug:
 			for terrain in self.get_terrain():
