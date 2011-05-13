@@ -17,7 +17,7 @@ class CalculusBlasters:
 
 		self.id = id
 		self.svrip = svrip
-		self.client = multiplayer.Client( self.svrip, self.useData )
+		self.client = multiplayer.Client( self.svrip, self.use_data )
 		self.player2 = None
 
 		# set the dimensions of the display window
@@ -41,7 +41,7 @@ class CalculusBlasters:
 			pygame.K_x : False
 		}
 
-		self.world = world.World( ( 2000, 2000 ) )
+		self.world = world.World( ( 2400, 2300 ) )
 		self.world.set_background( "giantbg.png" )
 		self.world.set_gravity( geometry.Vector( 0, 1 ) )
 		self.world.debug = True
@@ -53,11 +53,11 @@ class CalculusBlasters:
 
 		# create a player1 character
 		if self.id == 1:
-			self.player1 = entities.PlayerEntity( "blue", ( 1940, 1940 ) )
+			self.player1 = entities.PlayerEntity( "blue", ( 2340, 2240 ) )
 			self.player2 = entities.PlayerEntity( "red", ( 100, 100 ), "rocketplok.gif" )
 		elif self.id == 2:
 			self.player1 = entities.PlayerEntity( "red", ( 100, 100 ) )
-			self.player2 = entities.PlayerEntity( "blue", ( 1940, 1940 ), "rocketplok.gif" )
+			self.player2 = entities.PlayerEntity( "blue", ( 2340, 2240 ), "rocketplok.gif" )
 
 		self.world.add_entity( self.player1, attrs="player" )
 		self.world.set_entity_name( self.player1, "player1" )
@@ -68,7 +68,7 @@ class CalculusBlasters:
 		self.player2.addGun( managers.BulletManager( self.player2 ) )
 
 		self.flag1 = entities.FlagEntity( "red", ( 50, 175 ) )
-		self.flag2 = entities.FlagEntity( "blue", ( 1950, 1975 ) )
+		self.flag2 = entities.FlagEntity( "blue", ( 2350, 2275 ) )
 		self.world.add_entity( self.flag1 )
 		self.world.add_entity( self.flag2 )
 
@@ -80,12 +80,12 @@ class CalculusBlasters:
 		
 		self.delta = 0.0
 
-		self.makeTerrain()
+		self.make_terrain()
 
 		while self.running:
 			self.game_loop()
 
-	def useData( self, data ):
+	def use_data( self, data ):
 		if self.player2 is None:
 			return
 		if data is None:
@@ -114,11 +114,11 @@ class CalculusBlasters:
 			if data.hit:
 				self.player1.was_hit()
 
-	def createBlock( self, x, y, w, h ):
+	def create_block( self, x, y, w, h ):
 		p = geometry.Terrain( [( x, y ), ( x + w, y ), ( x + w, y + h ), ( x, y + h )], self.world )
 		self.world.add_terrain( p )
 
-	def makeTerrain( self ):
+	def make_terrain( self ):
 
 		# create a boundary around the world
 		leftWall = geometry.Slope( [( 0, 0 ), ( 0, self.world.get_height() )] )
