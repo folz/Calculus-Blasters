@@ -179,7 +179,7 @@ class PlayerEntity( entity.Entity ):
 	MAXXSPEED = 10
 	MAXYSPEED = 20
 
-	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="brown-soldier.png", velocity=geometry.Vector( 0, 0 ) ):
+	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="rocketplok.gif", velocity=geometry.Vector( 0, 0 ) ):
 		'''
 		Constructor
 		'''
@@ -297,12 +297,6 @@ class PlayerEntity( entity.Entity ):
 				elif self.boundingPoly.isLeft == True: # if we're to the left of whatever we're colliding with
 					self.velocity.x = 0
 				elif self.boundingPoly.isLeft == False: #if we're to the right of whatever we're colliding with
-					# !! actually, disregard the below comment - we're not using it
-					''' 
-					okay, so technically, we're to the left of our collision. but if we try to set velocity
-					this way, we'll end up setting our velocity to 0 no matter what. so instead, let's cheat and
-					not bother to check left-side collisions
-					'''
 					self.velocity.x = 0
 					pass
 				elif self.boundingPoly.isLeft == None: # this shouldn't happen, but sometimes it comes back neither true nor false

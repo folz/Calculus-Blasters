@@ -4,8 +4,6 @@ Created on Jun 23, 2010
 @author: folz
 '''
 
-import pygame, math
-from pygame.locals import *
 from engine import *
 from engine.misc import *
 
@@ -15,6 +13,8 @@ import entities
 
 class WeatheredStone:
 	def __init__( self, id, svrip ):
+		pygame.init()
+
 		self.id = id
 		self.svrip = svrip
 		self.client = multiplayer.Client( self.svrip, self.useData )
@@ -27,12 +27,11 @@ class WeatheredStone:
 		self.window = gamewindow.GameWindow( self.SIZE )
 		self.window.set_title( "Calculus Blasters" )
 		self.window.set_flags( pygame.HWSURFACE | pygame.DOUBLEBUF )# | pygame.FULLSCREEN )
-		self.window.display( )
+		self.window.display()
 
-		pygame.init( )
 		self.helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 
-		self.clock = pygame.time.Clock( )
+		self.clock = pygame.time.Clock()
 		self.keys = {
 			pygame.K_ESCAPE : False,
 			pygame.K_LEFT : False,
@@ -72,7 +71,7 @@ class WeatheredStone:
 		self.world.add_entity( self.flag1 )
 		self.world.add_entity( self.flag2 )
 
-		self.polygons = ( )
+		self.polygons = ()
 
 		self.viewport.follow( self.player1 )
 
@@ -82,10 +81,10 @@ class WeatheredStone:
 
 		self.delta = 0.0
 
-		self.makeTerrain( )
-		
+		self.makeTerrain()
+
 		while self.running:
-			self.game_loop( )
+			self.game_loop()
 
 	def useData( self, data ):
 		if self.player2 is None:
@@ -102,34 +101,38 @@ class WeatheredStone:
 				if data.fc:
 					self.flag1.was_captured_by( self.player2 )
 				else:
-					self.flag1.release( )
+					self.flag1.release()
 			else:
 				self.flag2.set_facing( data.ff )
 				self.flag1.updateScore( data.s )
 				if data.fc:
 					self.flag2.was_captured_by( self.player2 )
 				else:
-					self.flag2.release( )
+					self.flag2.release()
 			#networkBullets.fromNetwork(data.bullets)
 			for b in data.bullets:
 				self.player2.gun.addBullet( ( b[0], b[1] ), ( b[2], b[3] ) )
 			if data.hit:
-				self.player1.was_hit( )
+				self.player1.was_hit()
 
 	def createBlock( self, x, y, w, h ):
 		p = geometry.Terrain( [( x, y ), ( x + w, y ), ( x + w, y + h ), ( x, y + h )], self.world )
 		self.world.add_terrain( p )
 
 	def makeTerrain( self ):
-		leftWall = geometry.Slope( [( 0, 0 ), ( 0, 2000 )] )
+
+		# create a boundary around the world
+		leftWall = geometry.Slope( [( 0, 0 ), ( 0, self.world.get_height() )] )
 		self.world.add_terrain( leftWall )
-		rightWall = geometry.Slope( [( 2000, 0 ), ( 2000, 2000 )] )
+
+		rightWall = geometry.Slope( [( self.world.get_width(), 0 ), ( self.world.get_width(), self.world.get_height() )] )
 		self.world.add_terrain( rightWall )
-		topWall = geometry.Slope( [( 0, 0 ), ( 2000, 0 )] )
+
+		topWall = geometry.Slope( [( 0, 0 ), ( self.world.get_width(), 0 )] )
 		self.world.add_terrain( topWall )
-		
-		#bottomwall
-		self.createBlock( 0, 2000, 2000, 50 )
+
+		bottomWall = geometry.Slope( [( 0, self.world.get_height() ), ( self.world.get_width(), self.world.get_height() )] )
+		self.world.add_terrain( bottomWall )
 
 		#top level
 		p = geometry.Terrain( [( 1350, 350 ), ( 1500, 350 ), ( 1500, 250 )], self.world )
@@ -229,9 +232,9 @@ class WeatheredStone:
 			self.keys[key] = False
 
 	def handle_events( self ):
-		for event in pygame.event.get( ):
+		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				self.client.kill( )
+				self.client.kill()
 				self.running = False
 
 			elif event.type in ( pygame.KEYDOWN, pygame.KEYUP ):
@@ -280,26 +283,27 @@ class WeatheredStone:
 			self.player1.velocity.x += .6
 
 		if self.keys[pygame.K_z]:
-			self.player1.startJumping( )
+			self.player1.startJumping()
 
 		if self.keys[pygame.K_x]:
-			self.player1.shoot( )
+			self.player1.shoot()
 			self.keys[pygame.K_x] = False
 
 		self.player1.move( self.delta )
 
 	def game_loop( self ):
 		self.delta = self.clock.tick( 30 ) #FPS
-		self.handle_events( )
-		self.do_logic( )
-		self.send_data( )
+		self.handle_events()
+		self.do_logic()
+		self.send_data()
 		self.viewport.render( self.delta )
-		self.networkBullets.draw( )
+		self.networkBullets.draw()
 		self.window.screen.blit( self.helveticaFnt.render( "Blue Team Score: " + str( self.flag2.score ), True, ( 0, 0, 255 ), ( 0, 0, 0 ) ), ( 0, 0 ) )
 		self.window.screen.blit( self.helveticaFnt.render( "Red Team Score: " + str( self.flag1.score ), True, ( 255, 0, 0 ), ( 0, 0, 0 ) ), ( 0, 18 ) )
-		pygame.display.flip( )
+		pygame.display.flip()
 
 if __name__ == "__main__":
 	id = int ( input ( "id? " ) )
 	svrip = input ( "server ip? " )
 	WeatheredStone = WeatheredStone( id, svrip )
+
