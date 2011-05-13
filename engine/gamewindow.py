@@ -56,7 +56,10 @@ class GameWindow:
 		return self.screen.get_caption()
 
 	def set_title( self, title ):
-		self.title = title
+		if not self.visible:
+			self.title = title
+		else:
+			self.screen.set_caption(title)
 
 	### -------- methods that actually do things -------- ###
 

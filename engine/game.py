@@ -12,6 +12,13 @@ from engine.misc import *
 class Game:
 	def __init__(self, size=(0, 0), ):
 		self.size = size
+	
+	def setup(self):
+		pass
+	
+	def gameloop(self, delta):
+		pass
+	
 		
 
 id = int ( input ( "id? " ) )
@@ -161,12 +168,12 @@ def makeTerrain():
 # create the viewport that will view the world
 viewport = viewport.Viewport( window, world )
 
-# create a player character
+# create a player1 character
 if id == 1:
 	player = entities.PlayerEntity( "blue", ( 1940, 1940 ) )
 else:
 	player = entities.PlayerEntity( "red", ( 100, 100 ) )
-world.add_entity( player, "player" )
+world.add_entity( player, "player1" )
 player.addGun( managers.BulletManager( player ) )
 
 flag = entities.FlagEntity( "red", ( 50, 175 ) )
@@ -207,13 +214,13 @@ if id == 2:
 	player2 = entities.PlayerEntity( "blue", ( 1940, 1940 ), "green-soldier.png" )
 else:
 	player2 = entities.PlayerEntity( "red", ( 100, 100 ), "green-soldier.png" )
-world.add_entity( player2, attrs="player" )
+world.add_entity( player2, attrs="player1" )
 world.set_entity_name( player2, "player2" )
 player2.addGun( managers.BulletManager( player2 ) )
 
 def sendData():
 	global client, id, player2
-	bullets = player.gun.bullets
+	bullets = player1.gun.bullets
 	bs = []
 	for b in bullets:
 		if not b.sent:
@@ -229,11 +236,11 @@ def sendData():
 		flagFace = flag2.facing
 		score = flag.score
 		cap = flag2.captured
-	data = multiplayer.Data( player.location.x, player.location.y, bs, id, player2.hit, player.facing, flagFace, score, cap )
+	data = multiplayer.Data( player1.location.x, player1.location.y, bs, id, player2.hit, player.facing, flagFace, score, cap )
 	client.sendData( data )
 	player2.hit = False
 
-def doLogic():
+def do_logic():
 	player.moving = False
 
 	if keys[pygame.K_ESCAPE]:
@@ -243,15 +250,15 @@ def doLogic():
 		player.moving = True
 		player.facing = "left"
 		if player.wasFacing == "right":
-			player.velocity.x = 0
-		player.velocity.x += -.6
+			player1.velocity.x = 0
+		player1.velocity.x += -.6
 
 	if keys[pygame.K_RIGHT]:
 		player.moving = True
 		player.facing = "right"
 		if player.wasFacing == "left":
-			player.velocity.x = 0
-		player.velocity.x += .6
+			player1.velocity.x = 0
+		player1.velocity.x += .6
 
 	if keys[pygame.K_z]:
 		player.startJumping()
@@ -268,7 +275,7 @@ makeTerrain()
 while running:
 	delta = clock.tick( 30 ) #FPS
 	handle_events()
-	doLogic()
+	do_logic()
 	sendData()
 	viewport.render( delta )
 	networkBullets.draw()

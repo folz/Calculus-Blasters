@@ -58,7 +58,7 @@ class Client:
 	def kill( self ):
 		self.running = False
 
-	def sendData( self, data ):
+	def send_data( self, data ):
 		send = pickle.dumps( data )
 		self.client.send_data( send )
 

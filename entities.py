@@ -99,18 +99,18 @@ class FlagEntity( entity.Entity ):
 		self.scale = 1
 		self.score = 0
 
-	def setFacing( self, newFacing ):
+	def set_facing( self, newFacing ):
 		self.wasFacing = self.facing
 		self.facing = newFacing
 
-	def wasCapturedBy( self, entity ):
+	def was_captured_by( self, entity ):
 		self.captured = True
 		self.capturer = entity
-		self.capturer.flag = self
+		self.capturer.flag1 = self
 
 	def release( self ):
 		if self.capturer is not None:
-			self.capturer.flag = None
+			self.capturer.flag1 = None
 			self.capturer.hasFlag = False
 		self.facing = "right"
 		self.captured = False
@@ -132,13 +132,13 @@ class FlagEntity( entity.Entity ):
 				if player.team != self.team:
 					mtd = self.boundingPoly.collide( player.boundingPoly )
 					if mtd != False:
-						self.wasCapturedBy( player )
+						self.was_captured_by( player )
 						player.hasFlag = True
 						print( "captured" )
 				else:
 					mtd = self.boundingPoly.collide( player.boundingPoly )
 					if mtd != False and player.hasFlag and self.captured == False:
-						player.flag.release()
+						player1.flag1.release()
 						self.score += 1
 						print( "SCORED" )
 
@@ -193,7 +193,7 @@ class PlayerEntity( entity.Entity ):
 		self.gun = None
 		self.team = team
 		self.hasFlag = False
-		self.flag = None
+		self.flag1 = None
 		self.hit = False
 		self.health = 10
 		self.active = 200
@@ -212,14 +212,14 @@ class PlayerEntity( entity.Entity ):
 		self.active = 0
 		self.rect = pygame.Rect( self.boundingPoly.realPoints[0][0], self.boundingPoly.realPoints[0][1], self.boundingPoly.width, self.boundingPoly.height )
 
-	def setFacing( self, newFace ):
+	def set_facing( self, newFace ):
 		self.wasFacing = self.facing
 		self.facing = newFace
 
-	def wasHit( self ):
+	def was_hit( self ):
 		if self.hasFlag:
 			self.hasFlag = False
-			self.flag.release()
+			self.flag1.release()
 		self.health -= 1
 		if self.health == 0:
 			self.reset()
@@ -228,7 +228,7 @@ class PlayerEntity( entity.Entity ):
 		self.hit = True
 		if self.hasFlag:
 			self.hasFlag = False
-			self.flag.release()
+			self.flag1.release()
 	def startJumping( self ):
 		if not self.jumping:
 			self.velocity += geometry.Vector( 0, -20 )
