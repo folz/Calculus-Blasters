@@ -13,8 +13,8 @@ class BulletEntity( entity.Entity ):
 	A Bullet is something you shoot. It is handled by a BulletManager
 	'''
 
-	MAX_SPEED_X = 100
-	MAX_SPEED_Y = 100
+	MAX_SPEED_X = 30
+	MAX_SPEED_Y = 30
 
 	def __init__( self, location, velocity, facing ):
 		'''
@@ -31,13 +31,12 @@ class BulletEntity( entity.Entity ):
 		self.bulletmanager = bulletmanager
 
 	def networkBullet( self ):
-		p2 = self.world.get_entity_by_name("player2")
-		self.boundingPoly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-		mtd = p2.boundingPoly.collide( self.boundingPoly )
+		p2 = self.world.get_entity_by_name( "player2" )
+		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
+		mtd = p2.bounding_poly.collide( self.bounding_poly )
 		if mtd != False:
 			p2.takeHit()
 			self.used = True
-
 
 	def move( self ):
 		if( self.velocity.x == 0 ):
@@ -71,9 +70,9 @@ class BulletEntity( entity.Entity ):
 
 	def checkCollisions( self ):
 		if not self.used:
-			self.boundingPoly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
+			self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 			for terrain in self.world.get_terrain():
-				mtd = self.boundingPoly.collide( terrain )
+				mtd = self.bounding_poly.collide( terrain )
 				if mtd != False:
 					self.used = True
 		if self.used:
@@ -99,18 +98,18 @@ class FlagEntity( entity.Entity ):
 		self.scale = 1
 		self.score = 0
 
-	def setFacing( self, newFacing ):
+	def set_facing( self, newFacing ):
 		self.wasFacing = self.facing
 		self.facing = newFacing
 
-	def wasCapturedBy( self, entity ):
+	def was_captured_by( self, entity ):
 		self.captured = True
 		self.capturer = entity
-		self.capturer.flag = self
+		self.capturer.flag1 = self
 
 	def release( self ):
 		if self.capturer is not None:
-			self.capturer.flag = None
+			self.capturer.flag1 = None
 			self.capturer.hasFlag = False
 		self.facing = "right"
 		self.captured = False
@@ -126,19 +125,19 @@ class FlagEntity( entity.Entity ):
 		self.score = score
 
 	def checkCollisions( self ):
-		self.boundingPoly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
+		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 		if not self.captured:
-			for player in self.world.get_entities_by_attribute("player"):
+			for player in self.world.get_entities_by_attribute( "player" ):
 				if player.team != self.team:
-					mtd = self.boundingPoly.collide( player.boundingPoly )
+					mtd = self.bounding_poly.collide( player.bounding_poly )
 					if mtd != False:
-						self.wasCapturedBy( player )
+						self.was_captured_by( player )
 						player.hasFlag = True
 						print( "captured" )
 				else:
-					mtd = self.boundingPoly.collide( player.boundingPoly )
+					mtd = self.bounding_poly.collide( player.bounding_poly )
 					if mtd != False and player.hasFlag and self.captured == False:
-						player.flag.release()
+						player.flag1.release()
 						self.score += 1
 						print( "SCORED" )
 
@@ -151,7 +150,7 @@ class FlagEntity( entity.Entity ):
 				self.location.x = self.capturer.location.x - self.capturer.get_width() / 2
 				self.location.y = self.capturer.location.y
 
-		self.rect = pygame.Rect( self.boundingPoly.realPoints[0][0], self.boundingPoly.realPoints[0][1], self.boundingPoly.width, self.boundingPoly.height )
+		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
 
 	def draw( self ):
 		if self.facing == "right" and self.scale == -1:
@@ -164,22 +163,15 @@ class FlagEntity( entity.Entity ):
 		entity.Entity.draw( self )
 		self.wasFacing = self.facing
 
-
-'''
-Created on Jun 24, 2010
-
-@author: folz
-'''
-
 class PlayerEntity( entity.Entity ):
 	'''
 	classdocs
 	'''
 
-	MAXXSPEED = 10
-	MAXYSPEED = 20
+	MAXXSPEED = 7
+	MAXYSPEED = 12
 
-	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="brown-soldier.png", velocity=geometry.Vector( 0, 0 ) ):
+	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="rocketplok.gif", velocity=geometry.Vector( 0, 0 ) ):
 		'''
 		Constructor
 		'''
@@ -193,12 +185,12 @@ class PlayerEntity( entity.Entity ):
 		self.gun = None
 		self.team = team
 		self.hasFlag = False
-		self.flag = None
+		self.flag1 = None
 		self.hit = False
 		self.health = 10
 		self.active = 200
 		self.scale = 1
-		
+
 
 	def reset( self ):
 		self.moving = False
@@ -210,16 +202,16 @@ class PlayerEntity( entity.Entity ):
 		self.health = 10
 		self.location = geometry.Vector( self.startLocation[0], self.startLocation[1] )
 		self.active = 0
-		self.rect = pygame.Rect( self.boundingPoly.realPoints[0][0], self.boundingPoly.realPoints[0][1], self.boundingPoly.width, self.boundingPoly.height )
+		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
 
-	def setFacing( self, newFace ):
+	def set_facing( self, newFace ):
 		self.wasFacing = self.facing
 		self.facing = newFace
 
-	def wasHit( self ):
+	def was_hit( self ):
 		if self.hasFlag:
 			self.hasFlag = False
-			self.flag.release()
+			self.flag1.release()
 		self.health -= 1
 		if self.health == 0:
 			self.reset()
@@ -228,12 +220,12 @@ class PlayerEntity( entity.Entity ):
 		self.hit = True
 		if self.hasFlag:
 			self.hasFlag = False
-			self.flag.release()
-	def startJumping( self ):
-		if not self.jumping:
-			self.velocity += geometry.Vector( 0, -20 )
-			self.jumping = True
-
+			self.flag1.release()
+	
+	def start_jumping( self ):
+		#if not self.jumping:
+		self.velocity += geometry.Vector( 0, -1.5 )
+		#	self.jumping = True
 
 	def addGun( self, gun ):
 		self.gun = gun
@@ -253,10 +245,9 @@ class PlayerEntity( entity.Entity ):
 		if not self.active == 200:
 			self.active += 1
 			return
-		if abs( self.velocity.x ) > .001 or self.jumping:
-			self.velocity += self.world.gravity
 
-		if ( abs( self.velocity.x ) > .001 and not self.moving ):# and not self.jumping:
+		# If the entity has a non-zero velocity but we're not moving, slow it down 
+		if ( abs( self.velocity.x ) > .001 and not self.moving ):
 			self.velocity.x *= .5
 
 		if self.velocity.x > self.MAXXSPEED:
@@ -275,42 +266,33 @@ class PlayerEntity( entity.Entity ):
 
 		self.checkCollisions()
 
-
 	def checkCollisions( self ):
-		if not self.active == 200: return
-		self.boundingPoly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
+		if not self.active == 200:
+			return
+		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 		for terrain in self.world.get_terrain():
-			mtd = self.boundingPoly.collide( terrain )
+			mtd = self.bounding_poly.collide( terrain )
 
 			if mtd != False: # if we're colliding with the terrain
 				self.location += mtd # adjust our position so that we're not colliding anymore
 
-				if self.boundingPoly.isAbove == True: # if we're above whatever we're colliding with
+				if self.bounding_poly.isAbove == True: # if we're above whatever we're colliding with
 					self.velocity.y = 0
-					self.jumping = False
-				elif self.boundingPoly.isAbove == False: # if we're below whatever we're colliding with
+				elif self.bounding_poly.isAbove == False: # if we're below whatever we're colliding with
 					self.velocity.y = 0
-					self.jumping = True
-				elif self.boundingPoly.isAbove == None: # this shouldn't happen, but sometimes it comes back neither true nor false
-					self.velocity += self.world.gravity
-
-				elif self.boundingPoly.isLeft == True: # if we're to the left of whatever we're colliding with
-					self.velocity.x = 0
-				elif self.boundingPoly.isLeft == False: #if we're to the right of whatever we're colliding with
-					# !! actually, disregard the below comment - we're not using it
-					''' 
-					okay, so technically, we're to the left of our collision. but if we try to set velocity
-					this way, we'll end up setting our velocity to 0 no matter what. so instead, let's cheat and
-					not bother to check left-side collisions
-					'''
-					self.velocity.x = 0
+				elif self.bounding_poly.isAbove == None: # this shouldn't happen, but sometimes it comes back neither true nor false
 					pass
-				elif self.boundingPoly.isLeft == None: # this shouldn't happen, but sometimes it comes back neither true nor false
+
+				elif self.bounding_poly.isLeft == True: # if we're to the left of whatever we're colliding with
+					self.velocity.x = 0
+				elif self.bounding_poly.isLeft == False: #if we're to the right of whatever we're colliding with
+					self.velocity.x = 0
+				elif self.bounding_poly.isLeft == None: # this shouldn't happen, but sometimes it comes back neither true nor false
 					pass
 			else: # we're not colliding with anything
 				pass#self.jumping = True
 
-		self.rect = pygame.Rect( self.boundingPoly.realPoints[0][0], self.boundingPoly.realPoints[0][1], self.boundingPoly.width, self.boundingPoly.height )
+		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
 		self.wasVelocity = self.velocity
 
 	def draw( self ):

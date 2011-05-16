@@ -36,7 +36,7 @@ class Entity( pygame.sprite.Sprite ):
 
 		if image is not None:
 			self.rect = self.image.get_rect()
-		self.boundingPoly = geometry.Rect( self.rect.x, self.rect.y, self.get_width(), self.get_height() )
+		self.bounding_poly = geometry.Rect( self.rect.x, self.rect.y, self.get_width(), self.get_height() )
 
 	def __repr__( self ):
 		return "Entity %s at (%d, %d) on %s with vector %s" % ( self.image, self.location.x, self.location.y, self.world, self.velocity )
@@ -60,13 +60,16 @@ class Entity( pygame.sprite.Sprite ):
 		return self.get_width(), self.get_height()
 
 	def get_bounding_poly( self ):
-		return self.boundingPoly
+		return self.bounding_poly
 
 	def set_bounding_poly( self, poly ):
-		self.boundingPoly = poly
+		self.bounding_poly = poly
 
 	def is_on_screen( self ):
-		return self.location.x + self.get_width() >= self.world.viewport.get_x_coord() and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() and self.location.y + self.get_height() >= self.world.viewport.get_y_coord() and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
+		return self.location.x + self.get_width() >= self.world.viewport.get_x_coord() \
+			and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() \
+			and self.location.y + self.get_height() >= self.world.viewport.get_y_coord() \
+			and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
 
 	def draw( self ):
 		self.world.blit( self.image, self.rect )
