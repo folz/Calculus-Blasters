@@ -31,7 +31,7 @@ binary = {
 	"^": math.pow,
 }
 
-constants = {
+const = {
 	"e": math.e,
 	"pi": math.pi,
 }
@@ -54,20 +54,20 @@ def parse(stream):
 			func = lambda x: binary[op](lhs(x), rhs(x))
 		assert next(stream) == ')'
 		return func
-	elif tok == 'x':
-		return lambda x: x
 	else:
-		return lambda x: constants.get(tok, float(tok))
+		return lambda x: x if tok == 'x' else const.get(tok, float(tok))
 
 pick_op = lambda table: random.choice(list(table.keys()))
 
 def make_unary(child):
 	op = pick_op(unary)
-	return (op, child[0]), lambda x: unary[op](child(x))
+	fx = lambda x: unary[op](child[1](x))
+	return (op, child[0]), fx
 
 def make_binary(lhs, rhs):
 	op = pick_op(binary)
-	return (op, lhs[0], rhs[0]), lambda x: binary[op](lhs(x), rhs(x))
+	fx = lambda x: binary[op](lhs[1](x), rhs[1](x))
+	return (op, lhs[0], rhs[0]), fx
 
 def make_var():
 	k = random.randint(1, 10)
