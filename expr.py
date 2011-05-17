@@ -3,22 +3,24 @@ import math
 import operator
 import random
 
-h = 0.001
-N = int(1 / h)
+h = 0.00000001
+N = int(math.sqrt(1 / h))
 
 syntax = r'\(|\)'
 numeric = r'-?\d*\.?\d+'
 opname = r'[a-z\+\-\*\/\^]+'
-numeric_rx = re.compile(numeric)
-rx = re.compile(r'(' + r'|'.join([syntax, opname, numeric]) + r')')
+rx = re.compile('(' + '|'.join([syntax, opname, numeric]) + ')')
 
 unary = {
+	"ln": math.log,
+	"exp": math.exp,
+	"sqrt": math.sqrt,
 	"sin": math.sin,
 	"cos": math.cos,
 	"tan": math.tan,
-	"exp": math.exp,
-	"ln": math.log,
-	"sqrt": math.sqrt,
+	"arcsin": math.asin,
+	"arccos": math.acos,
+	"arctan": math.atan,
 }
 
 binary = {
@@ -27,7 +29,11 @@ binary = {
 	"*": operator.mul,
 	"/": operator.truediv,
 	"^": math.pow,
-	"root": lambda k, n: math.pow(k, 1 / n),
+}
+
+constants = {
+	"e": math.e,
+	"pi": math.pi,
 }
 
 def tokenize(s):
@@ -36,6 +42,7 @@ def tokenize(s):
 
 def parse(stream):
 	'Create a function out of a token stream.'
+	# stream = numeric || '(' + op + [stream] + ')'
 	tok = next(stream)
 	if tok == '(':
 		op = next(stream)
@@ -47,44 +54,77 @@ def parse(stream):
 			func = lambda x: binary[op](lhs(x), rhs(x))
 		assert next(stream) == ')'
 		return func
-	elif numeric_rx.match(tok):
-		k = float(tok)
-		return lambda x: k
-
-def generate():
-	'Generate a word problem and its solution.'
-	pass
-
-def makeFunction(size):
-	'Generate a function and its string representation given its size.'
-	if size <= 0:
-		k = random.randint(1, 10)
-		return str(k), lambda x: k
-	if random.random() < .5:
-		arg = makeFunction(size - 1)
-		name = random.choice(unary.keys())
-		fx = lambda x: unary[name](arg[1](x))
-		return (name, arg[0]), fx
+	elif tok == 'x':
+		return lambda x: x
 	else:
-		lhs = makeFunction(size // 2)
-		rhs = makeFunction(size // 2)
-		name = random.choice(binary.keys())
-		fx = lambda x: binary[name](lhs[1](x), rhs[1](x))
-		return (name, lhs[0], rhs[0]), fx
+		return lambda x: constants.get(tok, float(tok))
+
+pick_op = lambda table: random.choice(list(table.keys()))
+
+def make_unary(child):
+	op = pick_op(unary)
+	return (op, child[0]), lambda x: unary[op](child(x))
+
+def make_binary(lhs, rhs):
+	op = pick_op(binary)
+	return (op, lhs[0], rhs[0]), lambda x: binary[op](lhs(x), rhs(x))
+
+def make_var():
+	k = random.randint(1, 10)
+	return '(* {0} x)'.format(k) if k > 1 else 'x', lambda x: k * x
+
+def func_gen(size):
+	'Generate a function and its string representation given a size.'
+	prob = random.random()
+	if size <= 0 or prob < 0.5:
+		return make_var()
+	elif size <= 2 or prob < 0.8:
+		return make_unary(func_gen(size - 1))
+	else:
+		return make_binary(func_gen(size // 2), func_gen(size // 2))
+
+def func_repr(elt):
+	if isinstance(elt, tuple):
+		return '(' + ' '.join([func_repr(sub) for sub in elt]) + ')'
+	return elt
 
 def equal(lhs, rhs):
 	'Determine if two floats are similar enough to be equal.'
-	return abs(lhs - rhs) < h
+	return abs(lhs - rhs) < 0.001
 
 def differentiate(fx, k):
 	return (fx(k + h) - fx(k)) / h
 
-def differentiator(fx):
+def derivative(fx):
 	return lambda x: differentiate(fx, x)
 
 def integrate(fx, a, b):
 	traps = (fx(a + (b - a) * k / N) for k in range(1, N))
 	return (b - a) * (fx(a) / 2 + fx(b) / 2 + sum(traps)) / N
 
-def integrator(fx):
+def integral(fx):
 	return lambda x: integrate(fx, 0, x)
+
+questions = [
+	("f(x) = {0}. f'(x) = ?", derivative),
+	("f(x) = {0}. f''(x) = ?", lambda fx: derivative(derivative(fx))),
+	("f(x) = {0}. F(x) = ? + C", integral),
+]
+
+def generate():
+	'Generate a word problem and its solution.'
+	problem = random.choice(questions)
+	fstr, fx = func_gen(random.randint(2, 4))
+	question = problem[0].format(func_repr(fstr))
+	return question, problem[1](fx)
+
+def test():
+	print("Calculus Blasters")
+	while True:
+		question, soln = generate()
+		print("\n?> " + question, '\n')
+		fx = parse(tokenize(input("#> ")))
+		pt = random.randint(1, 10)
+		print("Correct!" if equal(fx(pt), soln(pt)) else "Incorrect.")
+
+test()
