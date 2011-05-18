@@ -3,7 +3,7 @@ import math
 import operator
 import random
 
-h = 0.00000001
+h = 0.000001
 N = int(math.sqrt(1 / h))
 
 syntax = r'\(|\)'
@@ -21,6 +21,9 @@ unary = {
 	"arcsin": math.asin,
 	"arccos": math.acos,
 	"arctan": math.atan,
+	"csc": lambda x: 1 / math.sin(x),
+	"sec": lambda x: 1 / math.cos(x),
+	"cot": lambda x: 1 / math.tan(x),
 }
 
 binary = {
@@ -71,7 +74,7 @@ def make_binary(lhs, rhs):
 
 def make_var():
 	k = random.randint(1, 10)
-	return '(* {0} x)'.format(k) if k > 1 else 'x', lambda x: k * x
+	return ("*", str(k), "x"), lambda x: k * x
 
 def func_gen(size):
 	'Generate a function and its string representation given a size.'
@@ -88,9 +91,36 @@ def func_repr(elt):
 		return '(' + ' '.join([func_repr(sub) for sub in elt]) + ')'
 	return elt
 
+def func_infix(elt):
+	if isinstance(elt, tuple):
+		if elt[0] in unary:
+			return elt[0] + '(' + func_infix(elt[1]) + ')'
+		else:
+			lhs, rhs = map(func_infix, elt[1:])
+			if elt[0] == '*':
+				filt = lambda s: '' if s == '1' else s
+				return filt(lhs) + filt(rhs)
+			else:
+				return lhs + ' ' + elt[0] + ' ' + rhs
+	return elt
+
 def equal(lhs, rhs):
 	'Determine if two floats are similar enough to be equal.'
 	return abs(lhs - rhs) < 0.001
+
+def check(lfx, rfx):
+	domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
+	domain.extend([math.e ** k for k in domain[1:]])
+	domain.extend([math.pi ** k for k in domain[1:]])
+	score, denom = 0, len(domain)
+	for elt in domain:
+		try:
+			if equal(lfx(elt), rfx(elt)):
+				score += 1
+		except:
+			denom -= 1
+	print("Score = {0}/{1}...".format(score, denom))
+	return score / denom > .5 if denom else False
 
 def differentiate(fx, k):
 	return (fx(k + h) - fx(k)) / h
@@ -114,8 +144,8 @@ questions = [
 def generate():
 	'Generate a word problem and its solution.'
 	problem = random.choice(questions)
-	fstr, fx = func_gen(random.randint(2, 4))
-	question = problem[0].format(func_repr(fstr))
+	fstr, fx = func_gen(random.randint(2, 3))
+	question = problem[0].format(func_infix(fstr))
 	return question, problem[1](fx)
 
 def test():
@@ -124,7 +154,6 @@ def test():
 		question, soln = generate()
 		print("\n?> " + question, '\n')
 		fx = parse(tokenize(input("#> ")))
-		pt = random.randint(1, 10)
-		print("Correct!" if equal(fx(pt), soln(pt)) else "Incorrect.")
+		print("Correct!" if check(fx, soln) else "Incorrect.")
 
 test()
