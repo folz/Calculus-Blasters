@@ -43,6 +43,25 @@ def tokenize(s):
 	'Create a token stream out of the input.'
 	return (tok for tok in rx.split(s) if tok.strip())
 
+def infix_tokenize(s):
+	'Tokenize inputs based on infix syntactic rules.'
+	stream = tokenize(s)
+	for tok in stream:
+		last = 0
+		pieces = []
+		for pos, char in enumerate(tok):
+			if pos == 0 and char == 'x':
+				last = pos + 1
+				pieces.append(char)
+			elif char in binary:
+				pieces.append(tok[last:pos])
+				pieces.append(char)
+				last = pos + 1
+		pieces.append(tok[last:])
+		for piece in pieces:
+			if piece:
+				yield piece
+
 def parse(stream):
 	'Create a function out of a token stream.'
 	# stream = numeric || '(' + op + [stream] + ')'
@@ -148,12 +167,16 @@ def generate():
 	question = problem[0].format(func_infix(fstr))
 	return question, problem[1](fx)
 
-def test():
+def repl():
 	print("Calculus Blasters")
 	while True:
 		question, soln = generate()
 		print("\n?> " + question, '\n')
 		fx = parse(tokenize(input("#> ")))
 		print("Correct!" if check(fx, soln) else "Incorrect.")
+
+def test():
+	while True:
+		print([tok for tok in infix_tokenize(input("I> "))])
 
 test()
