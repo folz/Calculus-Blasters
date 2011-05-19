@@ -13,8 +13,8 @@ class BulletEntity( entity.Entity ):
 	A Bullet is something you shoot. It is handled by a BulletManager
 	'''
 
-	MAX_SPEED_X = 30
-	MAX_SPEED_Y = 30
+	MAX_SPEED_X = 5
+	MAX_SPEED_Y = 5
 
 	def __init__( self, location, velocity, facing ):
 		'''
