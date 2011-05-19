@@ -71,7 +71,9 @@ class Viewport:
 	def follow( self, entity ):
 		self.following = entity
 
-	def update( self ):
+	def update( self, delta ):
+		self.world.update( delta )
+		
 		if self.following is None:
 			self.xCoord += self.velocity.x
 			self.yCoord += self.velocity.y
@@ -95,8 +97,6 @@ class Viewport:
 
 
 	def render( self, delta ):
-		self.update()
-
 		pygame.Surface.fill( self.world, ( ( 0, 0, 0 ) ), pygame.Rect( self.xCoord, self.yCoord, self.xCoord + self.window.get_width(), self.yCoord + self.window.get_height() ) )
 		buffer = pygame.Surface( self.world.get_size() )
 

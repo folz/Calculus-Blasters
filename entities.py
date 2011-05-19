@@ -13,8 +13,8 @@ class BulletEntity( entity.Entity ):
 	A Bullet is something you shoot. It is handled by a BulletManager
 	'''
 
-	MAX_SPEED_X = 30
-	MAX_SPEED_Y = 30
+	MAX_SPEED_X = 5
+	MAX_SPEED_Y = 5
 
 	def __init__( self, location, velocity, facing ):
 		'''
@@ -163,13 +163,16 @@ class FlagEntity( entity.Entity ):
 		entity.Entity.draw( self )
 		self.wasFacing = self.facing
 
-class PlayerEntity( entity.Entity ):
+class PlayerEntity( entity.CollidableEntity ):
 	'''
 	classdocs
 	'''
-
-	MAXXSPEED = 7
-	MAXYSPEED = 12
+	
+	PIXELSPERVECTOR = 1
+	
+	MAXXSPEED = 4
+	MAXUPSPEED = 4
+	MAXDOWNSPEED = 4
 
 	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="rocketplok.gif", velocity=geometry.Vector( 0, 0 ) ):
 		'''
@@ -188,7 +191,7 @@ class PlayerEntity( entity.Entity ):
 		self.flag1 = None
 		self.hit = False
 		self.health = 10
-		self.active = 200
+		self.death_cooldown = 200
 		self.scale = 1
 
 
@@ -201,7 +204,7 @@ class PlayerEntity( entity.Entity ):
 		self.hit = False
 		self.health = 10
 		self.location = geometry.Vector( self.startLocation[0], self.startLocation[1] )
-		self.active = 0
+		self.death_cooldown = 0
 		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
 
 	def set_facing( self, newFace ):
@@ -223,15 +226,14 @@ class PlayerEntity( entity.Entity ):
 			self.flag1.release()
 	
 	def start_jumping( self ):
-		#if not self.jumping:
+		# we're more flying than jumping
 		self.velocity += geometry.Vector( 0, -1.5 )
-		#	self.jumping = True
 
 	def addGun( self, gun ):
 		self.gun = gun
 
 	def shoot( self ):
-		if not self.active == 200: return
+		if not self.death_cooldown == 200: return
 		offset = 0
 		if self.facing == "left":
 			xvel = -20 + self.velocity.x * .2
@@ -242,32 +244,32 @@ class PlayerEntity( entity.Entity ):
 		self.gun.addBullet( ( self.location.x + offset, self.location.y + self.get_height() / 2 ), ( xvel, 0 ), self.facing ) # TODO get velocity based on user mouse position
 
 	def move( self, delta ):
-		if not self.active == 200:
-			self.active += 1
+		if not self.death_cooldown == 200:
+			self.death_cooldown += 1
 			return
 
 		# If the entity has a non-zero velocity but we're not moving, slow it down 
 		if ( abs( self.velocity.x ) > .001 and not self.moving ):
 			self.velocity.x *= .5
-
+		
 		if self.velocity.x > self.MAXXSPEED:
 			self.velocity.x = self.MAXXSPEED
 		if self.velocity.x < -self.MAXXSPEED:
 			self.velocity.x = -self.MAXXSPEED
-		if self.velocity.y > self.MAXYSPEED:
-			self.velocity.y = self.MAXYSPEED
-		if self.velocity.y < -self.MAXYSPEED:
-			self.velocity.y = -self.MAXYSPEED
+		if self.velocity.y > self.MAXUPSPEED:
+			self.velocity.y = self.MAXUPSPEED
+		if self.velocity.y < -self.MAXDOWNSPEED:
+			self.velocity.y = -self.MAXDOWNSPEED
 
-		self.location.x += self.velocity.x #* (PIXELSPERVECTOR / delta)
-		self.location.y += self.velocity.y #* (PIXELSPERVECTOR / delta)
+		self.location.x += self.velocity.x * (PlayerEntity.PIXELSPERVECTOR / delta)
+		self.location.y += self.velocity.y * (PlayerEntity.PIXELSPERVECTOR / delta)
 
 		self.gun.shoot()
-
-		self.checkCollisions()
-
-	def checkCollisions( self ):
-		if not self.active == 200:
+		
+	def check_collisions( self ):
+		print(self.velocity)
+		
+		if not self.death_cooldown == 200:
 			return
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 		for terrain in self.world.get_terrain():

@@ -22,6 +22,13 @@ class CalculusBlasters:
 
 		# set the dimensions of the display window
 		self.SIZE = self.WIDTH, self.HEIGHT = 800, 600
+		
+		# set the FPS
+		self.FPS = 30
+
+		# the actual FPS value refers to the delay, so let's update it properly
+		# 1000ms/self.FPS = delay (but we're still calling it FPS)
+		self.FPS = 1000/self.FPS
 
 		# create the window and display it
 		self.window = gamewindow.GameWindow( self.SIZE )
@@ -79,6 +86,7 @@ class CalculusBlasters:
 		self.running = True
 		
 		self.delta = 0.0
+		self.delta_count = 0.0
 
 		self.make_terrain()
 
@@ -200,14 +208,21 @@ class CalculusBlasters:
 			self.player1.shoot()
 			self.keys[pygame.K_x] = False
 
-		self.player1.move( self.delta )
-
 	def game_loop( self ):
-		self.delta = self.clock.tick( 30 ) #FPS
+		# Timing controls
+		self.delta = self.clock.tick( )
+		self.delta_count += self.delta
+		
 		self.handle_events()
 		self.do_logic()
 		self.send_data()
-		self.viewport.render( self.delta )
+		
+		self.viewport.update( self.delta )
+		if self.delta_count > self.FPS:
+			self.delta_count -= self.FPS
+			self.viewport.render( self.delta )
+		
+		
 		self.networkBullets.draw()
 		self.window.screen.blit( self.helveticaFnt.render( "Blue Team Score: " + str( self.flag2.score ), True, ( 0, 0, 255 ), ( 0, 0, 0 ) ), ( 0, 0 ) )
 		self.window.screen.blit( self.helveticaFnt.render( "Red Team Score: " + str( self.flag1.score ), True, ( 255, 0, 0 ), ( 0, 0, 0 ) ), ( 0, 18 ) )
