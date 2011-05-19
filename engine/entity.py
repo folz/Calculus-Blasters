@@ -44,12 +44,6 @@ class Entity( pygame.sprite.Sprite ):
 	def set_world_callback( self, world ):
 		self.world = world
 
-	def move( self, delta ):
-		'''
-		This should be overwritten by subclasses
-		'''
-		pass
-
 	def get_width( self ):
 		return self.image.get_width()
 
@@ -70,6 +64,35 @@ class Entity( pygame.sprite.Sprite ):
 			and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() \
 			and self.location.y + self.get_height() >= self.world.viewport.get_y_coord() \
 			and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
+	
+	def real_move( self, delta ):
+		self.move( delta )
+	
+	def move( self, delta ):
+		'''
+		This should be overwritten by subclasses
+		'''
+		pass
 
 	def draw( self ):
 		self.world.blit( self.image, self.rect )
+
+
+class CollidableEntity( Entity ):
+	def __init__( self, image=None,
+				location=geometry.Vector( 0, 0 ),
+				velocity=geometry.Vector( 0, 0 ) ):
+		Entity.__init__( self, image, location, velocity )
+		
+	def real_move( self, delta ):
+		Entity.real_move( self, delta )
+		
+		self.move( delta )
+		
+		self.check_collisions()
+	
+	def move( self, delta ):
+		pass
+		
+	def check_collisions( self ):
+		pass

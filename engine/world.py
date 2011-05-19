@@ -9,7 +9,6 @@ import pygame
 from pygame.locals import *
 from engine import misc
 
-
 class World( pygame.Surface, pygame.sprite.Group ):
 	'''
 	A World is a Surface Group where you draw Entities. It is viewed by a Viewpoint
@@ -88,17 +87,22 @@ class World( pygame.Surface, pygame.sprite.Group ):
 	def add_terrain( self, object ):
 		self.terrain.append( object )
 		object.set_world_callback( self )
+	
+	def update ( self, delta ):
+		for entity in self.sprites():
+			entity.velocity += self.gravity 
+			entity.real_move( delta )
 
 	def redraw( self, delta ):
 		#note to self - parallax scrolling is determined by the second and third arguments to blit
 		self.blit( self.background, ( self.viewport.xCoord, self.viewport.yCoord ), self.viewport.get_size() )
 		self.delta = delta
+		
+		self.update( delta )
+		
 		if self.debug:
 			for terrain in self.get_terrain():
 				terrain.debug()
 		for entity in self.sprites():
-			entity.velocity += self.gravity
-
-			entity.move( delta )
 			if entity.is_on_screen():
 				entity.draw()
