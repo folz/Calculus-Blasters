@@ -57,15 +57,15 @@ class World( pygame.Surface, pygame.sprite.Group ):
 
 	def get_terrain( self ):
 		return self.terrain
-	
-	def set_entity_name(self, entity, name):
+
+	def set_entity_name( self, entity, name ):
 		if entity in self.get_entities():
 			self.names[name] = entity
-	
-	def get_entity_by_name(self, name):
+
+	def get_entity_by_name( self, name ):
 		return self.names[name]
-	
-	def get_entities_by_attribute(self, attribute):
+
+	def get_entities_by_attribute( self, attribute ):
 		if self.attributes[attribute] != None:
 			return self.attributes[attribute]
 		else:
@@ -76,30 +76,30 @@ class World( pygame.Surface, pygame.sprite.Group ):
 		pygame.sprite.Group.add( self, object )
 		object.set_world_callback( self )
 		if attrs != None:
-			if type(attrs) in [type("")]:
+			if type( attrs ) in [type( "" )]:
 				attrs = [attrs]
 			for attr in attrs:
 				try:
-					self.attributes[attr].append(object)
+					self.attributes[attr].append( object )
 				except:
 					self.attributes[attr] = [object]
 
 	def add_terrain( self, object ):
 		self.terrain.append( object )
 		object.set_world_callback( self )
-	
+
 	def update ( self, delta ):
 		for entity in self.sprites():
-			entity.velocity += self.gravity 
+			entity.velocity += self.gravity
 			entity.real_move( delta )
 
 	def redraw( self, delta ):
 		#note to self - parallax scrolling is determined by the second and third arguments to blit
 		self.blit( self.background, ( self.viewport.xCoord, self.viewport.yCoord ), self.viewport.get_size() )
 		self.delta = delta
-		
+
 		self.update( delta )
-		
+
 		if self.debug:
 			for terrain in self.get_terrain():
 				terrain.debug()

@@ -167,9 +167,9 @@ class PlayerEntity( entity.CollidableEntity ):
 	'''
 	classdocs
 	'''
-	
+
 	PIXELSPERVECTOR = 1
-	
+
 	MAXXSPEED = 4
 	MAXUPSPEED = 4
 	MAXDOWNSPEED = 4
@@ -224,7 +224,7 @@ class PlayerEntity( entity.CollidableEntity ):
 		if self.hasFlag:
 			self.hasFlag = False
 			self.flag1.release()
-	
+
 	def start_jumping( self ):
 		# we're more flying than jumping
 		self.velocity += geometry.Vector( 0, -1.5 )
@@ -251,7 +251,7 @@ class PlayerEntity( entity.CollidableEntity ):
 		# If the entity has a non-zero velocity but we're not moving, slow it down 
 		if ( abs( self.velocity.x ) > .001 and not self.moving ):
 			self.velocity.x *= .5
-		
+
 		if self.velocity.x > self.MAXXSPEED:
 			self.velocity.x = self.MAXXSPEED
 		if self.velocity.x < -self.MAXXSPEED:
@@ -261,14 +261,12 @@ class PlayerEntity( entity.CollidableEntity ):
 		if self.velocity.y < -self.MAXDOWNSPEED:
 			self.velocity.y = -self.MAXDOWNSPEED
 
-		self.location.x += self.velocity.x * (PlayerEntity.PIXELSPERVECTOR / delta)
-		self.location.y += self.velocity.y * (PlayerEntity.PIXELSPERVECTOR / delta)
+		self.location.x += self.velocity.x * ( PlayerEntity.PIXELSPERVECTOR / delta )
+		self.location.y += self.velocity.y * ( PlayerEntity.PIXELSPERVECTOR / delta )
 
 		self.gun.shoot()
-		
+
 	def check_collisions( self ):
-		print(self.velocity)
-		
 		if not self.death_cooldown == 200:
 			return
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )

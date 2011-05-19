@@ -10,10 +10,10 @@ import pickle, random, socket, threading
 class Server( netbase.TCPServer ):
 	def __init__( self ):
 		netbase.TCPServer.__init__( self )
-		self.ip = socket.gethostbyname( socket.gethostname( ) )
+		self.ip = socket.gethostbyname( socket.gethostname() )
 		print( "The Server's IP is: {0} ".format( self.ip ) )
 		self.connect( self.ip, 9999 )
-		self.serve_forever( )
+		self.serve_forever()
 
 	def connect_func( self, sock, host, port ):
 		print ( "Server successfully connected to {0} on port {1}!".format( host, port ) )
@@ -28,7 +28,7 @@ class Server( netbase.TCPServer ):
 		self.send_data( data )
 
 	def kill( self ):
-		self.quit( )
+		self.quit()
 
 class Data:
 	def __init__( self, playerX, playerY, bullets, id, hit, playerFacing, flagFace, score, flagCapured ):
@@ -68,9 +68,10 @@ class Client:
 
 			try:
 				data = pickle.loads( data )
-			except: 
+			except:
 				continue
 			self.stone( data )
 
 if __name__ == "__main__":
 	s = Server()
+

@@ -73,7 +73,7 @@ class Viewport:
 
 	def update( self, delta ):
 		self.world.update( delta )
-		
+
 		if self.following is None:
 			self.xCoord += self.velocity.x
 			self.yCoord += self.velocity.y
@@ -107,3 +107,4 @@ class Viewport:
 		self.window.screen.blit( buffer, self.vpRenderOffset )
 		# self.window.screen.blit(self.helveticaFnt.render('(' + str(self.xCoord) + ", " + str(self.yCoord) + ")", True, (255, 255, 255)), (0, 0))
 		# pygame.display.flip()
+
