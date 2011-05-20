@@ -150,7 +150,7 @@ questions = [
 
 identities = [
 	("d/dx sin(u) = u` * ?", math.cos),
-	("sin(x)**2 + cos(x)**2 = ?", lambda x: 1),
+	("sin(x)^2 + cos(x)^2 = ?", lambda x: 1),
 ]
 
 def generate():
