@@ -37,11 +37,13 @@ binary = {
 }
 
 def parse(s):
+	'Create a nested-lambda expression from a string.'
 	return build_expr(ast.parse(s))
 
 ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
 
 def build_expr(node):
+	'Search for a lambdify-able AST node.'
 	child = ast.iter_child_nodes(node)
 	for sub in child:
 		if type(sub) in ast_hints:
@@ -51,6 +53,7 @@ def build_expr(node):
 	raise Exception("Error: couldn't parse the AST.")
 
 def lambdify(node):
+	'Convert AST nodes to their lambda equivalents.'
 	if isinstance(node, ast.Name):
 		return lambda x: const.get(node.id, x)
 	elif isinstance(node, ast.Num):
@@ -66,10 +69,6 @@ def lambdify(node):
 		func = const[type(node.op)]
 		fx = lambdify(node.operand)
 	return lambda x: func(fx(x))
-
-'''print(":: Unexpected node type.")
-print(node, type(node), ast.dump(node))
-raise Exception()'''
 
 pick_op = lambda table: random.choice(list(table.keys()))
 
@@ -112,12 +111,13 @@ def func_infix(elt):
 	return elt
 
 def equal(lhs, rhs):
-	'Determine if two floats are similar enough to be equal.'
+	'Compare floats for equality.'
 	return abs(lhs - rhs) < 0.001
 
 domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
 
 def check(lfx, rfx):
+	'Check if two functions are equivalent.'
 	score, denom = 0, len(domain)
 	for elt in domain:
 		try:
