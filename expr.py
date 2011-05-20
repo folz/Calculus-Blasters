@@ -62,6 +62,21 @@ def infix_tokenize(s):
 			if piece:
 				yield piece
 
+def infix_to_prefix(stream):
+	'Generate a prefix expression stack out of an infix stream.'
+	stack = []
+	while True:
+		try:
+			op = next(stream)
+		except:
+			return stack
+		if op in binary:
+			stack.append((op, stack.pop(), infix_to_prefix(stream)))
+		elif op in unary:
+			stack.append((op, infix_to_prefix(stream)))
+		else:
+			stack.append((op))
+
 def parse(stream):
 	'Create a function out of a token stream.'
 	# stream = numeric || '(' + op + [stream] + ')'
@@ -100,7 +115,7 @@ def func_gen(size):
 	prob = random.random()
 	if size <= 0 or prob < 0.5:
 		return make_var()
-	elif size <= 2 or prob < 0.8:
+	elif size < 2 or prob < 0.8:
 		return make_unary(func_gen(size - 1))
 	else:
 		return make_binary(func_gen(size // 2), func_gen(size // 2))
@@ -177,6 +192,7 @@ def repl():
 
 def test():
 	while True:
-		print([tok for tok in infix_tokenize(input("I> "))])
+		stream = infix_tokenize(input("I> "))
+		print(infix_to_prefix(stream))
 
 test()
