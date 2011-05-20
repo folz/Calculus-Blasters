@@ -39,7 +39,7 @@ binary = {
 def parse(s):
 	return build_expr(ast.parse(s))
 
-ast_hints = ast.Call, ast.BinOp, ast.Num, ast.Name
+ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
 
 def build_expr(node):
 	child = ast.iter_child_nodes(node)
@@ -163,4 +163,4 @@ def repl():
 		fx = parse(input("Blast> "))
 		print("Correct!" if check(fx, soln) else "Incorrect.")
 
-repl()
+# repl()
