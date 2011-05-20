@@ -44,9 +44,8 @@ ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
 def build_expr(node):
 	child = ast.iter_child_nodes(node)
 	for sub in child:
-		for ast_t in ast_hints:
-			if isinstance(sub, ast_t):
-				return lambdify(sub)
+		if type(sub) in ast_hints:
+			return lambdify(sub)
 		return build_expr(sub)
 	print(ast.dump(node))
 	raise Exception("Error: couldn't parse the AST.")
