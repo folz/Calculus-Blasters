@@ -8,7 +8,7 @@ import math, pygame, sys
 from pygame.locals import *
 from engine import *
 
-class BulletEntity( entity.Entity ):
+class BulletEntity( entity.CollidableEntity ):
 	'''
 	A Bullet is something you shoot. It is handled by a BulletManager
 	'''
@@ -35,10 +35,10 @@ class BulletEntity( entity.Entity ):
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 		mtd = p2.bounding_poly.collide( self.bounding_poly )
 		if mtd != False:
-			p2.takeHit()
+			p2.take_hit()
 			self.used = True
 
-	def move( self ):
+	def move( self, delta ):
 		if( self.velocity.x == 0 ):
 			return
 
@@ -58,29 +58,24 @@ class BulletEntity( entity.Entity ):
 		if self.velocity.y < -self.MAX_SPEED_Y:
 			self.velocity.y = -self.MAX_SPEED_Y
 
-		self.location.x += self.velocity.x #* (PIXELSPERVECTOR / delta)
-		self.location.y += self.velocity.y #* (PIXELSPERVECTOR / delta)
+		self.location.x += self.velocity.x * ( entity.Entity.PIXELSPERVECTOR / delta )
+		self.location.y += self.velocity.y * ( entity.Entity.PIXELSPERVECTOR / delta )
 
 		self.rect = pygame.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 
 		if self.location.x < 0 or self.location.x > self.world.get_width() or self.location.y < 0 or self.location.y > self.world.get_height():
 			self.bulletmanager.bullets.remove( self )
 
-		self.checkCollisions()
-
-	def checkCollisions( self ):
+	def check_collisions( self ):
 		if not self.used:
 			self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 			for terrain in self.world.get_terrain():
 				mtd = self.bounding_poly.collide( terrain )
 				if mtd != False:
 					self.used = True
-		if self.used:
+		else:
 			self.bulletmanager.removeBullet( self )
 			del self
-
-	def draw( self ):
-		entity.Entity.draw( self )
 
 class FlagEntity( entity.Entity ):
 
@@ -168,8 +163,6 @@ class PlayerEntity( entity.CollidableEntity ):
 	classdocs
 	'''
 
-	PIXELSPERVECTOR = 1
-
 	MAXXSPEED = 4
 	MAXUPSPEED = 4
 	MAXDOWNSPEED = 4
@@ -193,7 +186,6 @@ class PlayerEntity( entity.CollidableEntity ):
 		self.health = 10
 		self.death_cooldown = 200
 		self.scale = 1
-
 
 	def reset( self ):
 		self.moving = False
@@ -219,17 +211,24 @@ class PlayerEntity( entity.CollidableEntity ):
 		if self.health == 0:
 			self.reset()
 
-	def takeHit( self ):
-		self.hit = True
+	def take_hit( self ):
 		if self.hasFlag:
 			self.hasFlag = False
 			self.flag1.release()
+		self.hit = True
 
-	def start_jumping( self ):
-		# we're more flying than jumping
+	def move_left( self ):
+		self.moving = True
+		self.facing = "left"
+
+	def move_right( self ):
+		self.moving = True
+		self.facing = "right"
+
+	def try_to_fly( self ):
 		self.velocity += geometry.Vector( 0, -1.5 )
 
-	def addGun( self, gun ):
+	def add_gun( self, gun ):
 		self.gun = gun
 
 	def shoot( self ):
@@ -252,6 +251,8 @@ class PlayerEntity( entity.CollidableEntity ):
 		if ( abs( self.velocity.x ) > .001 and not self.moving ):
 			self.velocity.x *= .5
 
+		self.velocity += self.world.gravity
+
 		if self.velocity.x > self.MAXXSPEED:
 			self.velocity.x = self.MAXXSPEED
 		if self.velocity.x < -self.MAXXSPEED:
@@ -264,7 +265,11 @@ class PlayerEntity( entity.CollidableEntity ):
 		self.location.x += self.velocity.x * ( PlayerEntity.PIXELSPERVECTOR / delta )
 		self.location.y += self.velocity.y * ( PlayerEntity.PIXELSPERVECTOR / delta )
 
-		self.gun.shoot()
+		print( "Velocity: {0}".format( self.velocity ) )
+
+		self.gun.shoot( delta )
+
+
 
 	def check_collisions( self ):
 		if not self.death_cooldown == 200:

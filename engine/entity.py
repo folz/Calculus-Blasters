@@ -13,6 +13,9 @@ class Entity( pygame.sprite.Sprite ):
 	'''
 	An entity represents any element that appears in a World
 	'''
+	
+	PIXELSPERVECTOR = 1
+	
 	def __init__( self, image=None,
 				location=geometry.Vector( 0, 0 ),
 				velocity=geometry.Vector( 0, 0 ) ):
@@ -76,7 +79,6 @@ class Entity( pygame.sprite.Sprite ):
 
 	def draw( self ):
 		self.world.blit( self.image, self.rect )
-
 
 class CollidableEntity( Entity ):
 	def __init__( self, image=None,

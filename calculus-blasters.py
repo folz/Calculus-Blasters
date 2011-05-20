@@ -12,6 +12,8 @@ import managers
 import entities
 
 class CalculusBlasters:
+	TITLE = "Calculus Blasters"
+	
 	def __init__( self, id, svrip ):
 		pygame.init()
 
@@ -32,11 +34,9 @@ class CalculusBlasters:
 
 		# create the window and display it
 		self.window = gamewindow.GameWindow( self.SIZE )
-		self.window.set_title( "Calculus Blasters" )
+		self.window.set_title( CalculusBlasters.TITLE )
 		self.window.set_flags( pygame.HWSURFACE | pygame.DOUBLEBUF )# | pygame.FULLSCREEN )
 		self.window.display()
-
-		self.helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 
 		self.clock = pygame.time.Clock()
 
@@ -68,11 +68,11 @@ class CalculusBlasters:
 
 		self.world.add_entity( self.player1, attrs="player" )
 		self.world.set_entity_name( self.player1, "player1" )
-		self.player1.addGun( managers.BulletManager( self.player1 ) )
+		self.player1.add_gun( managers.BulletManager( self.player1 ) )
 
 		self.world.add_entity( self.player2, attrs="player" )
 		self.world.set_entity_name( self.player2, "player2" )
-		self.player2.addGun( managers.BulletManager( self.player2 ) )
+		self.player2.add_gun( managers.BulletManager( self.player2 ) )
 
 		self.flag1 = entities.FlagEntity( "red", ( 50, 175 ) )
 		self.flag2 = entities.FlagEntity( "blue", ( 1950, 1975 ) )
@@ -94,12 +94,9 @@ class CalculusBlasters:
 			self.game_loop()
 
 	def use_data( self, data ):
-		if self.player2 is None:
-			return
-		if data is None:
+		if self.player2 is None or data is None:
 			return
 		if data.pId != self.id:
-			print( data )
 			self.player2.location = geometry.Vector( data.px, data.py )
 			self.player2.set_facing( data.pf )
 			if self.id == 2:
@@ -129,35 +126,17 @@ class CalculusBlasters:
 	def make_terrain( self ):
 
 		# create a boundary around the world
-		leftWall = geometry.Slope( [( 0, 0 ), ( 0, self.world.get_height() )] )
-		self.world.add_terrain( leftWall )
+		left_wall = geometry.Slope( [( 0, 0 ), ( 0, self.world.get_height() )] )
+		self.world.add_terrain( left_wall )
 
-		rightWall = geometry.Slope( [( self.world.get_width(), 0 ), ( self.world.get_width(), self.world.get_height() )] )
-		self.world.add_terrain( rightWall )
+		right_wall = geometry.Slope( [( self.world.get_width(), 0 ), ( self.world.get_width(), self.world.get_height() )] )
+		self.world.add_terrain( right_wall )
 
-		topWall = geometry.Slope( [( 0, 0 ), ( self.world.get_width(), 0 )] )
-		self.world.add_terrain( topWall )
+		top_wall = geometry.Slope( [( 0, 0 ), ( self.world.get_width(), 0 )] )
+		self.world.add_terrain( top_wall )
 
-		bottomWall = geometry.Slope( [( 0, self.world.get_height() ), ( self.world.get_width(), self.world.get_height() )] )
-		self.world.add_terrain( bottomWall )
-
-	def handle_keys( self, keyEvent ):
-		key = keyEvent.key
-
-		if keyEvent.type == pygame.KEYDOWN:
-			self.keys[key] = True
-
-		if keyEvent.type == pygame.KEYUP:
-			self.keys[key] = False
-
-	def handle_events( self ):
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				self.client.kill()
-				self.running = False
-
-			elif event.type in ( pygame.KEYDOWN, pygame.KEYUP ):
-				self.handle_keys( event )
+		bottom_wall = geometry.Slope( [( 0, self.world.get_height() ), ( self.world.get_width(), self.world.get_height() )] )
+		self.world.add_terrain( bottom_wall )
 
 	def send_data( self ):
 		bullets = self.player1.gun.bullets
@@ -177,32 +156,39 @@ class CalculusBlasters:
 			cap = self.flag2.captured
 		data = multiplayer.Data( self.player1.location.x, self.player1.location.y,
 								bs, id, self.player2.hit, self.player1.facing,
-								flagFace, score, cap )
+							flagFace, score, cap )
 		self.client.send_data( data )
 		self.player2.hit = False
 
-	def do_logic( self ):
-		self.player1.moving = False
+	def handle_events( self ):
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				self.client.kill()
+				self.running = False
 
+			elif event.type in ( pygame.KEYDOWN, pygame.KEYUP ):
+				self.handle_keys( event )
+
+	def handle_keys( self, keyEvent ):
+		key = keyEvent.key
+
+		if keyEvent.type == pygame.KEYDOWN:
+			self.keys[key] = True
+		if keyEvent.type == pygame.KEYUP:
+			self.keys[key] = False
+
+	def do_logic( self ):
 		if self.keys[pygame.K_ESCAPE]:
 			pygame.event.post( pygame.event.Event( pygame.QUIT ) )
 
 		if self.keys[pygame.K_LEFT]:
-			self.player1.moving = True
-			self.player1.facing = "left"
-			if self.player1.wasFacing == "right":
-				self.player1.velocity.x = 0
-			self.player1.velocity.x += -.6
+			self.player1.move_left()
 
 		if self.keys[pygame.K_RIGHT]:
-			self.player1.moving = True
-			self.player1.facing = "right"
-			if self.player1.wasFacing == "left":
-				self.player1.velocity.x = 0
-			self.player1.velocity.x += .6
+			self.player1.move_right()
 
 		if self.keys[pygame.K_z]:
-			self.player1.start_jumping()
+			self.player1.try_to_fly()
 
 		if self.keys[pygame.K_x]:
 			self.player1.shoot()
@@ -212,16 +198,18 @@ class CalculusBlasters:
 		# Timing controls
 		self.delta = self.clock.tick()
 		self.delta_count += self.delta
+		
+		self.window.set_title("{0} (FPS: {1})".format( CalculusBlasters.TITLE, 1000 / self.delta_count ) )
 
 		self.handle_events()
 		self.do_logic()
-		self.send_data()
 
 		self.viewport.update( self.delta )
+		self.send_data()
+
 		if self.delta_count > self.FPS:
 			self.delta_count -= self.FPS
 			self.viewport.render( self.delta )
-
 
 		self.networkBullets.draw()
 		self.window.screen.blit( self.helveticaFnt.render( "Blue Team Score: " + str( self.flag2.score ), True, ( 0, 0, 255 ), ( 0, 0, 0 ) ), ( 0, 0 ) )
@@ -232,4 +220,3 @@ if __name__ == "__main__":
 	id = int ( input ( "id? " ) )
 	svrip = input ( "server ip? " )
 	CalculusBlasters( id, svrip )
-

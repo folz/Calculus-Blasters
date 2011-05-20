@@ -17,9 +17,9 @@ class BulletManager:
 		self.lastshot = pygame.time.get_ticks()
 		self.bullets = []
 
-	def shoot( self ):
+	def shoot( self, delta ):
 		for b in self.bullets:
-			b.move()
+			b.move( delta )
 			b.draw()
 
 	def addBullet( self, location, velocity, facing="right" ):
@@ -36,17 +36,6 @@ class BulletManager:
 			self.bullets.remove( bullet )
 			del bullet
 
-'''
-Created on Jun 30, 2010
-
-@author: catapult
-'''
-
-import pygame, math
-from pygame.locals import *
-from engine import *
-from engine.misc import *
-
 class NetworkBulletManager:
 
 	def __init__( self, world ):
@@ -59,22 +48,6 @@ class NetworkBulletManager:
 			self.removeBullet( b )
 		for b in bullets:
 			self.addBullet( geometry.Vector( b[0], b[1] ) )
-
-#		amount = 0
-#		if len(self.bullets) < len(bullets):
-#			amount = len(bullets)-len(self.bullets)
-#			for i in range(amount):
-#				self.addBullet(bullets[i])
-#		elif len(self.bullets) > len(bullets):
-#			amount = len(self.bullets)-len(bullets)
-#			for i in range(amount):
-#				self.removeBullet(self.bullets[i])
-#				
-#		amount = len(bullets)-amount
-#		print(amount)
-#		if amount > 0:
-#			for i in range(amount):
-#				self.bullets[i].location = Vector(bullets[i+amount][0],bullets[i+amount][1])
 
 	def draw( self ):
 		for b in self.bullets:
@@ -91,4 +64,3 @@ class NetworkBulletManager:
 		if bullet in self.bullets:
 			self.bullets.remove( bullet )
 			del bullet
-
