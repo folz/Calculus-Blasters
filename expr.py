@@ -84,8 +84,8 @@ def make_binary(lhs, rhs):
 	return (name, lhs[0], rhs[0]), fx
 
 def make_var():
-	k = random.randint(1, 10)
-	return ("*", str(k), "x"), lambda x: k * x
+	k = random.randint(2, 10)
+	return "{0}x".format(k), lambda x: k * x
 
 def func_gen(size):
 	'Generate a function and its string representation given a size.'
@@ -102,12 +102,9 @@ def func_infix(elt):
 		if elt[0] in unary:
 			return elt[0] + '(' + func_infix(elt[1]) + ')'
 		else:
-			lhs, rhs = map(func_infix, elt[1:])
-			if elt[0] == '*':
-				filt = lambda s: '' if s == '1' else s
-				return filt(lhs) + filt(rhs)
-			else:
-				return lhs + ' ' + elt[0] + ' ' + rhs
+			return ' '.join([
+				func_infix(elt[1]), elt[0], func_infix(elt[2])
+			])
 	return elt
 
 def equal(lhs, rhs):
