@@ -1,16 +1,15 @@
 '''
-Created on Jun 22, 2010
+gamewindow.py
 
 @author: folz
 '''
 
 import pygame
-from pygame.locals import *
 
 class GameWindow:
 	'''
 	A GameWindow is the actual window where Worlds are drawn.
-	Sometimes it's fullscreen
+	Sometimes it's fullscreen.
 	'''
 	def __init__( self, size=( 800, 600 ), title="PyGame", flags=pygame.SWSURFACE, screen=None ):
 		self.width, self.height = self.size = size
@@ -25,6 +24,8 @@ class GameWindow:
 		return self.width
 
 	def set_width( self, width ):
+		if width == self.width:
+			return
 		self.width = width
 		self.size = ( self.width, self.height )
 		self.recreate()
@@ -33,6 +34,8 @@ class GameWindow:
 		return self.height
 
 	def set_height( self, height ):
+		if height == self.height:
+			return
 		self.height = height
 		self.size = ( self.width, self.height )
 		self.recreate()
@@ -41,6 +44,8 @@ class GameWindow:
 		return self.size
 
 	def set_size( self, size ):
+		if size == self.size:
+			return
 		self.size = size
 		self.width, self.height = self.size
 		self.recreate()
@@ -49,6 +54,8 @@ class GameWindow:
 		return self.flags
 
 	def set_flags( self, flags ):
+		if flags == self.flags:
+			return
 		self.flags = flags
 		self.recreate()
 
@@ -56,6 +63,8 @@ class GameWindow:
 		return self.screen.get_caption()
 
 	def set_title( self, title ):
+		if title == self.title:
+			return
 		if not self.visible:
 			self.title = title
 		else:
