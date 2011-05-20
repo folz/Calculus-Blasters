@@ -1,4 +1,4 @@
-import re
+import ast
 import math
 import operator
 import random
@@ -6,10 +6,11 @@ import random
 h = 0.000001
 N = int(math.sqrt(1 / h))
 
-syntax = r'\(|\)'
-numeric = r'-?\d*\.?\d+'
-opname = r'[a-z\+\-\*\/\^]+'
-rx = re.compile('(' + '|'.join([syntax, opname, numeric]) + ')')
+const = {
+	"e": math.e,
+	"pi": math.pi,
+	ast.USub: lambda x: -x,
+}
 
 unary = {
 	"ln": math.log,
@@ -27,72 +28,49 @@ unary = {
 }
 
 binary = {
-	"+": operator.add,
-	"-": operator.sub,
-	"*": operator.mul,
-	"/": operator.truediv,
-	"^": math.pow,
+	ast.Add: ('+', operator.add),
+	ast.Sub: ('-', operator.sub),
+	ast.Mult: ('*', operator.mul),
+	ast.Div: ('/', operator.truediv),
+	ast.Pow: ('^', math.pow),
+	ast.BitXor: ('^', math.pow),
 }
 
-const = {
-	"e": math.e,
-	"pi": math.pi,
-}
+def parse(s):
+	return build_expr(ast.parse(s))
 
-def tokenize(s):
-	'Create a token stream out of the input.'
-	return (tok for tok in rx.split(s) if tok.strip())
+ast_hints = ast.Call, ast.BinOp, ast.Num, ast.Name
 
-def infix_tokenize(s):
-	'Tokenize inputs based on infix syntactic rules.'
-	stream = tokenize(s)
-	for tok in stream:
-		last = 0
-		pieces = []
-		for pos, char in enumerate(tok):
-			if pos == 0 and char == 'x':
-				last = pos + 1
-				pieces.append(char)
-			elif char in binary:
-				pieces.append(tok[last:pos])
-				pieces.append(char)
-				last = pos + 1
-		pieces.append(tok[last:])
-		for piece in pieces:
-			if piece:
-				yield piece
+def build_expr(node):
+	child = ast.iter_child_nodes(node)
+	for sub in child:
+		for ast_t in ast_hints:
+			if isinstance(sub, ast_t):
+				return lambdify(sub)
+		return build_expr(sub)
+	print(ast.dump(node))
+	raise Exception("Error: couldn't parse the AST.")
 
-def infix_to_prefix(stream):
-	'Generate a prefix expression stack out of an infix stream.'
-	stack = []
-	while True:
-		try:
-			op = next(stream)
-		except:
-			return stack
-		if op in binary:
-			stack.append((op, stack.pop(), infix_to_prefix(stream)))
-		elif op in unary:
-			stack.append((op, infix_to_prefix(stream)))
-		else:
-			stack.append((op))
+def lambdify(node):
+	if isinstance(node, ast.Name):
+		return lambda x: const.get(node.id, x)
+	elif isinstance(node, ast.Num):
+		return lambda x: node.n
+	elif isinstance(node, ast.BinOp):
+		_, fn = binary[type(node.op)]
+		lfx, rfx = map(lambdify, (node.left, node.right))
+		return lambda x: fn(lfx(x), rfx(x))
+	elif isinstance(node, ast.Call):
+		func = unary[node.func.id]
+		fx = lambdify(node.args[0])
+	elif isinstance(node, ast.UnaryOp):
+		func = const[type(node.op)]
+		fx = lambdify(node.operand)
+	return lambda x: func(fx(x))
 
-def parse(stream):
-	'Create a function out of a token stream.'
-	# stream = numeric || '(' + op + [stream] + ')'
-	tok = next(stream)
-	if tok == '(':
-		op = next(stream)
-		if op in unary:
-			child = parse(stream)
-			func = lambda x: unary[op](child(x))
-		elif op in binary:
-			lhs, rhs = parse(stream), parse(stream)
-			func = lambda x: binary[op](lhs(x), rhs(x))
-		assert next(stream) == ')'
-		return func
-	else:
-		return lambda x: x if tok == 'x' else const.get(tok, float(tok))
+'''print(":: Unexpected node type.")
+print(node, type(node), ast.dump(node))
+raise Exception()'''
 
 pick_op = lambda table: random.choice(list(table.keys()))
 
@@ -103,8 +81,9 @@ def make_unary(child):
 
 def make_binary(lhs, rhs):
 	op = pick_op(binary)
-	fx = lambda x: binary[op](lhs[1](x), rhs[1](x))
-	return (op, lhs[0], rhs[0]), fx
+	name, fn = binary[op]
+	fx = lambda x: fn(lhs[1](x), rhs[1](x))
+	return (name, lhs[0], rhs[0]), fx
 
 def make_var():
 	k = random.randint(1, 10)
@@ -113,17 +92,12 @@ def make_var():
 def func_gen(size):
 	'Generate a function and its string representation given a size.'
 	prob = random.random()
-	if size <= 0 or prob < 0.5:
+	if size <= 0 or prob < 0.25:
 		return make_var()
-	elif size < 2 or prob < 0.8:
+	elif size <= 2 or prob < 0.50:
 		return make_unary(func_gen(size - 1))
 	else:
 		return make_binary(func_gen(size // 2), func_gen(size // 2))
-
-def func_repr(elt):
-	if isinstance(elt, tuple):
-		return '(' + ' '.join([func_repr(sub) for sub in elt]) + ')'
-	return elt
 
 def func_infix(elt):
 	if isinstance(elt, tuple):
@@ -142,10 +116,9 @@ def equal(lhs, rhs):
 	'Determine if two floats are similar enough to be equal.'
 	return abs(lhs - rhs) < 0.001
 
+domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
+
 def check(lfx, rfx):
-	domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
-	domain.extend([math.e ** k for k in domain[1:]])
-	domain.extend([math.pi ** k for k in domain[1:]])
 	score, denom = 0, len(domain)
 	for elt in domain:
 		try:
@@ -177,22 +150,17 @@ questions = [
 
 def generate():
 	'Generate a word problem and its solution.'
-	problem = random.choice(questions)
-	fstr, fx = func_gen(random.randint(2, 3))
-	question = problem[0].format(func_infix(fstr))
-	return question, problem[1](fx)
+	fstr, fx = func_gen(random.randint(1, 5))
+	problem, solution = random.choice(questions)
+	question = problem.format(func_infix(fstr))
+	return question, solution(fx)
 
 def repl():
-	print("Calculus Blasters")
+	print("Calculus Blasters (REPL)")
 	while True:
-		question, soln = generate()
-		print("\n?> " + question, '\n')
-		fx = parse(tokenize(input("#> ")))
+		prob, soln = generate()
+		print("\nCalculus> " + prob)
+		fx = parse(input("Blast> "))
 		print("Correct!" if check(fx, soln) else "Incorrect.")
 
-def test():
-	while True:
-		stream = infix_tokenize(input("I> "))
-		print(infix_to_prefix(stream))
-
-test()
+repl()
