@@ -148,12 +148,20 @@ questions = [
 	("f(x) = {0}. F(x) = ? + C", integral),
 ]
 
+identities = [
+	("d/dx sin(u) = u` * ?", math.cos),
+	("sin(x)**2 + cos(x)**2 = ?", lambda x: 1),
+]
+
 def generate():
 	'Generate a word problem and its solution.'
-	fstr, fx = func_gen(random.randint(1, 5))
-	problem, solution = random.choice(questions)
-	question = problem.format(func_infix(fstr))
-	return question, solution(fx)
+	if random.random() < 0.10:
+		return random.choice(identities)
+	else:
+		fstr, fx = func_gen(random.randint(1, 5))
+		problem, solution = random.choice(questions)
+		question = problem.format(func_infix(fstr))
+		return question, solution(fx)
 
 def repl():
 	print("Calculus Blasters (REPL)")
@@ -163,4 +171,4 @@ def repl():
 		fx = parse(input("Blast> "))
 		print("Correct!" if check(fx, soln) else "Incorrect.")
 
-# repl()
+repl()
