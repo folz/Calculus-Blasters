@@ -163,9 +163,9 @@ class PlayerEntity( entity.CollidableEntity ):
 	classdocs
 	'''
 
-	MAXXSPEED = 4
-	MAXUPSPEED = 4
-	MAXDOWNSPEED = 4
+	MAXXSPEED = 9.8
+	MAXUPSPEED = 9.8
+	MAXDOWNSPEED = 9.8
 
 	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="rocketplok.gif", velocity=geometry.Vector( 0, 0 ) ):
 		'''
@@ -220,13 +220,15 @@ class PlayerEntity( entity.CollidableEntity ):
 	def move_left( self ):
 		self.moving = True
 		self.facing = "left"
+		self.velocity.x -= .6
 
 	def move_right( self ):
 		self.moving = True
 		self.facing = "right"
+		self.velocity.x += .6
 
-	def try_to_fly( self ):
-		self.velocity += geometry.Vector( 0, -1.5 )
+	def fly( self ):
+		self.jumping = True
 
 	def add_gun( self, gun ):
 		self.gun = gun
@@ -246,12 +248,16 @@ class PlayerEntity( entity.CollidableEntity ):
 		if not self.death_cooldown == 200:
 			self.death_cooldown += 1
 			return
-
+		
+		# If we're trying to jump or fly or whatever you want to call it
+		if self.jumping:
+			self.velocity += geometry.Vector( 0, -29.4 ) * ( delta / 1000 )
+		
 		# If the entity has a non-zero velocity but we're not moving, slow it down 
 		if ( abs( self.velocity.x ) > .001 and not self.moving ):
 			self.velocity.x *= .5
 
-		self.velocity += self.world.gravity
+		self.velocity += self.world.gravity * ( delta / 1000  )
 
 		if self.velocity.x > self.MAXXSPEED:
 			self.velocity.x = self.MAXXSPEED
@@ -269,7 +275,8 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		self.gun.shoot( delta )
 
-
+		self.moving = False
+		self.jumping = False
 
 	def check_collisions( self ):
 		if not self.death_cooldown == 200:

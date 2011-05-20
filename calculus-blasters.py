@@ -37,6 +37,8 @@ class CalculusBlasters:
 		self.window.set_title( CalculusBlasters.TITLE )
 		self.window.set_flags( pygame.HWSURFACE | pygame.DOUBLEBUF )# | pygame.FULLSCREEN )
 		self.window.display()
+		
+		self.helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 
 		self.clock = pygame.time.Clock()
 
@@ -50,7 +52,7 @@ class CalculusBlasters:
 
 		self.world = world.World( ( 2000, 2000 ) )
 		self.world.set_background( "giantbg.png" )
-		self.world.set_gravity( geometry.Vector( 0, 1 ) )
+		self.world.set_gravity( geometry.Vector( 0, 9.8 ) )
 		self.world.debug = True
 
 		self.networkBullets = managers.NetworkBulletManager( self.world )
@@ -188,7 +190,7 @@ class CalculusBlasters:
 			self.player1.move_right()
 
 		if self.keys[pygame.K_z]:
-			self.player1.try_to_fly()
+			self.player1.fly()
 
 		if self.keys[pygame.K_x]:
 			self.player1.shoot()
