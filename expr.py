@@ -3,7 +3,7 @@ import math
 import operator
 import random
 
-h = 0.000001
+h = 10 ** -8
 N = int(math.sqrt(1 / h))
 
 const = {
@@ -109,7 +109,7 @@ def func_infix(elt):
 
 def equal(lhs, rhs):
 	'Compare floats for equality.'
-	return abs(lhs - rhs) < 0.001
+	return abs(lhs - rhs) < 0.005
 
 domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
 
@@ -145,13 +145,15 @@ questions = [
 ]
 
 identities = [
-	("d/dx sin(u) = u` * ?", math.cos),
 	("sin(x)^2 + cos(x)^2 = ?", lambda x: 1),
+	("d/dx sin(u) = u` * ?", derivative(math.sin)),
+	("d/dx cos(u) = u` * ?", derivative(math.cos)),
+	("d/dx tan(u) = u` * ?", derivative(math.tan)),
 ]
 
 def generate():
 	'Generate a word problem and its solution.'
-	if random.random() < 0.10:
+	if random.random() < 0.25:
 		return random.choice(identities)
 	else:
 		fstr, fx = func_gen(random.randint(1, 5))
@@ -166,5 +168,3 @@ def repl():
 		print("\nCalculus> " + prob)
 		fx = parse(input("Blast> "))
 		print("Correct!" if check(fx, soln) else "Incorrect.")
-
-repl()
