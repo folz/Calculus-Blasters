@@ -5,10 +5,16 @@ import random
 
 h = 10 ** -8
 N = int(math.sqrt(1 / h))
+idhash = lambda s: hash(s) % (10 ** 4) 
+static = lambda k: lambda x: k
 
 const = {
 	"e": math.e,
 	"pi": math.pi,
+	"u": idhash("u"),
+	"n": idhash("n"),
+	"a": idhash("a"),
+	"du": idhash("du"),
 	ast.USub: lambda x: -x,
 }
 
@@ -28,12 +34,12 @@ unary = {
 }
 
 binary = {
-	ast.Add: ('+', operator.add),
-	ast.Sub: ('-', operator.sub),
-	ast.Mult: ('*', operator.mul),
-	ast.Div: ('/', operator.truediv),
-	ast.Pow: ('^', math.pow),
-	ast.BitXor: ('^', math.pow),
+	ast.Add: 	('+', operator.add),
+	ast.Sub: 	('-', operator.sub),
+	ast.Mult: 	('*', operator.mul),
+	ast.Div: 	('/', operator.truediv),
+	ast.Pow: 	('^', math.pow),
+	ast.BitXor: 	('^', math.pow),
 }
 
 def parse(s):
@@ -57,7 +63,7 @@ def lambdify(node):
 	if isinstance(node, ast.Name):
 		return lambda x: const.get(node.id, x)
 	elif isinstance(node, ast.Num):
-		return lambda x: node.n
+		return static(node.n)
 	elif isinstance(node, ast.BinOp):
 		_, fn = binary[type(node.op)]
 		lfx, rfx = map(lambdify, (node.left, node.right))
@@ -109,9 +115,10 @@ def func_infix(elt):
 
 def equal(lhs, rhs):
 	'Compare floats for equality.'
-	return abs(lhs - rhs) < 0.005
+	return abs(lhs - rhs) < 0.010
 
-domain = [0, .5, 1, 2, math.e / 2, math.pi / 2]
+domain = [0, .5, 1, 2, math.e, math.pi]
+domain.extend([val for val in [(elt / 2, elt / 4, elt ** 2) for elt in domain[1:]]])
 
 def check(lfx, rfx):
 	'Check if two functions are equivalent.'
@@ -145,18 +152,33 @@ questions = [
 ]
 
 identities = [
-	("sin(x)^2 + cos(x)^2 = ?", lambda x: 1),
-	("d/dx sin(u) = u` * ?", derivative(math.sin)),
-	("d/dx cos(u) = u` * ?", derivative(math.cos)),
-	("d/dx tan(u) = u` * ?", derivative(math.tan)),
+	# Trig Identities
+	("sin(x)^2 + cos(x)^2 = ?", static(1)),
+	("cos(x)^2 = ?", parse("(1 + cos(2*x)) / 2")),
+	("sin(x)^2 = ?", parse("(1 - cos(2*x)) / 2")),
+
+	# Basic Differentiation
+	("d/dx u^n = ?", parse("n * (u ^ (n - 1))")),
+	("d/dx a^u = ?", parse("ln(a) * (a ^ u)")),
+	("d/dx e^u = ?", parse("du * (e ^ u)")),
+	("d/dx ln(u) = ?", parse("du / u")),
+
+	# Trig Differentiation
+	("d/dx sin(u) = ?", parse("du * cos(u)")),
+	("d/dx cos(u) = ?", parse("du * -sin(u)")),
+	("d/dx tan(u) = ?", parse("du * (sec(u) ^ 2)")),
+
+	# Integration Formulas
+	# Surface area, polar, arclen
+	# ("
 ]
 
 def generate():
 	'Generate a word problem and its solution.'
-	if random.random() < 0.25:
+	if random.random() < 0.33:
 		return random.choice(identities)
 	else:
-		fstr, fx = func_gen(random.randint(1, 5))
+		fstr, fx = func_gen(random.randint(1, 4))
 		problem, solution = random.choice(questions)
 		question = problem.format(func_infix(fstr))
 		return question, solution(fx)
@@ -167,4 +189,8 @@ def repl():
 		prob, soln = generate()
 		print("\nCalculus> " + prob)
 		fx = parse(input("Blast> "))
-		print("Correct!" if check(fx, soln) else "Incorrect.")
+		if check(fx, soln):
+			print("Correct!")
+		else:
+			action = input("Incorrect. Override (y/n)? ")
+			print("OK. My bad." if 'y' in action.lower() else "Moving on then...")
