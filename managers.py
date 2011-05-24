@@ -64,3 +64,4 @@ class NetworkBulletManager:
 		if bullet in self.bullets:
 			self.bullets.remove( bullet )
 			del bullet
+

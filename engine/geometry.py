@@ -33,7 +33,7 @@ class Vector:
 		return Vector( self.x * scalar, self.y * scalar )
 
 	__rmul__ = __mul__
-	
+
 	def __div__( self, scalar ):
 		return 1.0 / scalar * self
 
@@ -234,7 +234,7 @@ class Slope( Line ):
 
 	def set_world_callback( self, world ):
 		self.world = world
-	
+
 	def is_on_screen( self ):
 		return True
 
@@ -259,3 +259,5 @@ class Terrain( Polygon ):
 
 	def is_on_screen( self ):
 		return self.location.x + self.width >= self.world.viewport.get_x_coord() and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() and self.location.y + self.height >= self.world.viewport.get_y_coord() and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
+
+

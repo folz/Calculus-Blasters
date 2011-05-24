@@ -293,11 +293,11 @@ class PlayerEntity( entity.CollidableEntity ):
 	def check_collisions( self, delta ):
 		if not self.death_cooldown == 200:
 			return
-		
+
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-		
+
 		standing_on_something = False
-		
+
 		for terrain in self.world.get_terrain():
 			if terrain.is_on_screen():
 				mtd = self.bounding_poly.collide( terrain )
@@ -317,7 +317,7 @@ class PlayerEntity( entity.CollidableEntity ):
 					self.velocity.x = 0
 				elif self.bounding_poly.isLeft == False: #if we're to the right of whatever we're colliding with
 					self.velocity.x = 0
-		
+
 		if standing_on_something and not self.moving:
 			# If the entity has a non-zero velocity but we're not moving, slow it down 
 			if self.velocity.x < 0:
@@ -326,8 +326,8 @@ class PlayerEntity( entity.CollidableEntity ):
 				else:
 					self.velocity.x = 0
 			elif self.velocity.x > 0:
-				if self.velocity.x < - PlayerEntity.SPEED * frac( delta ):
-					self.velocity += geometry.Vector( - self.SPEED, 0 ) * frac( delta )
+				if self.velocity.x < -PlayerEntity.SPEED * frac( delta ):
+					self.velocity += geometry.Vector( -self.SPEED, 0 ) * frac( delta )
 				else:
 					self.velocity.x = 0
 
@@ -347,3 +347,4 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		entity.Entity.draw( self )
 		self.was_facing = self.facing
+
