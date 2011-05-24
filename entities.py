@@ -241,6 +241,7 @@ class PlayerEntity( entity.CollidableEntity ):
 		self.gun = gun
 
 	def debug( self, prnt ):
+		return
 		if self.team == "blue":
 			print( prnt )
 

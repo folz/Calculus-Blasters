@@ -18,7 +18,6 @@ class CalculusBlasters:
 		pygame.init()
 
 		self.id = id
-		self.client = multiplayer.Client( svrip, self.use_data )
 		self.player2 = None
 
 		# set the dimensions of the display window
@@ -99,6 +98,8 @@ class CalculusBlasters:
 		self.delta_count = 0.0
 
 		self.make_terrain()
+		
+		self.client = multiplayer.Client( svrip, self.use_data )
 
 		while self.running:
 			self.game_loop()
@@ -124,8 +125,8 @@ class CalculusBlasters:
 				else:
 					self.flag2.release()
 			#networkBullets.fromNetwork(data.bullets)
-			for b in data.bullets:
-				self.player2.gun.addBullet( ( b[0], b[1] ), ( b[2], b[3] ) )
+			#for b in data.bullets:
+			#	self.player2.gun.addBullet( ( b[0], b[1] ), ( b[2], b[3] ) )
 			if data.hit:
 				self.player1.was_hit()
 
@@ -215,7 +216,7 @@ class CalculusBlasters:
 
 		self.handle_events()
 		self.do_logic()
-
+		
 		self.viewport.update( self.delta )
 		self.send_data()
 
