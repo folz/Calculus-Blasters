@@ -41,24 +41,32 @@ special = {
 for name in ["u", "n", "a", "du"]:
 	special[name] = idhash(name)
 
-for name in ["f", "g", "dx", "dg"]:
+special_funcs = set(["f", "g", "dx", "dg"])
+for name in special_funcs:
 	special[name] = lambda x: x + idhash(name)
 
-rewrite = {
-	r'\[': r'(',
-	r'\]': r')',
-	r'\^': r'**',
-	r'\)([a-z\(])': r') * \g<1>', # ")(" or ")g"
-	r'(\d+)([a-z\(])': r'\g<1> * \g<2>', # "#g" or "#("
-	r'(?:\w*?)(a|u|n|du){1}\(': r'\g<1> * (', # "V(" BUT "f("
-}
+def VarFunc_resolver(match):
+	vf = match.group(1)
+	if vf in unary or vf in special_funcs:
+		return vf + '('
+	return vf + ' * ('
+
+rewrite = (
+	[r'\[', r'('],
+	[r'\]', r')'],
+	[r'\^', r'**'],
+	# "NumFunc|Var" or "Num(" or ")(" or ")Func|Var"
+	[re.compile(r'(\)|\d+)([a-z\(])'), r'\g<1> * \g<2>'],
+	# "Var(" but not "Func("
+	[re.compile(r'([a-z]+)\('), VarFunc_resolver],
+)
 
 def parse(s):
 	'Create a nested-lambda expression from a string.'
 	s = s.replace(' ', '')
-	for rule, pattern in rewrite.items():
+	for rule, pattern in rewrite:
 		s = re.sub(rule, pattern, s)
-	print("Re-wrote to {0}...".format(s))
+	print("I'll assume you meant to say '{0}'...".format(s))
 	return build_expr(ast.parse(s))
 
 ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
@@ -176,13 +184,13 @@ identities = [
 
 	# Basic Differentiation
 	("d/dx a = ?", static(0)),
-	("d/dx a[f(x)] = ?", parse("a[dx(x)]")), #! TODO
+	("d/dx a[f(x)] = ?", parse("a[dx(x)]")),
 	("d/dx [f(x) + g(x)] = ?", parse("dx(x) + dg(x)")),
 	("d/dx f(x)g(x) = ?", parse("f(x)dg(x) + dx(x)g(x)")),
 	("d/dx [1 / f(x)] = ?", parse("-dx(x) / (f(x)^2)")),
 	("d/dx f(g(x)) = ?", parse("dx(g(x))dg(x)")),
-	("d/dx u^n = ?", parse("n(u^(n-1))")), #! TODO
-	("d/dx a^u = ?", parse("ln(a)(a^u)")), #! TODO
+	("d/dx u^n = ?", parse("n(u^(n-1))")),
+	("d/dx a^u = ?", parse("ln(a)(a^u)")),
 	("d/dx e^u = ?", parse("(e^u)du")),
 	("d/dx ln(u) = ?", parse("du/u")),
 	# <Incomplete>
