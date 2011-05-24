@@ -50,7 +50,7 @@ class CalculusBlasters:
 		}
 
 		self.world = world.World( ( 3000, 800 ) )
-		self.world.set_background( "giantbg.png" )
+		self.world.set_background( "world_texture.png" )
 		self.world.set_gravity( geometry.Vector( 0, 9.8 ) )
 		self.world.debug = True
 
@@ -61,11 +61,17 @@ class CalculusBlasters:
 
 		# create a player1 character
 		if self.id == 1:
-			self.player1 = entities.PlayerEntity( "blue", ( 1940, 1940 ) )
+			self.player1 = entities.PlayerEntity( "blue",
+													( self.world.get_width() - 50,
+													  self.world.get_height() - 50 )
+												)
 			self.player2 = entities.PlayerEntity( "red", ( 100, 100 ), "rocketplok.gif" )
 		elif self.id == 2:
 			self.player1 = entities.PlayerEntity( "red", ( 100, 100 ) )
-			self.player2 = entities.PlayerEntity( "blue", ( 1940, 1940 ), "rocketplok.gif" )
+			self.player2 = entities.PlayerEntity( "blue",
+													( self.world.get_width() - 50,
+													self.world.get_height() - 50 )
+												, "rocketplok.gif" )
 
 		self.world.add_entity( self.player1, attrs="player" )
 		self.world.set_entity_name( self.player1, "player1" )
@@ -75,8 +81,11 @@ class CalculusBlasters:
 		self.world.set_entity_name( self.player2, "player2" )
 		self.player2.add_gun( managers.BulletManager( self.player2 ) )
 
-		self.flag1 = entities.FlagEntity( "red", ( 50, 175 ) )
-		self.flag2 = entities.FlagEntity( "blue", ( 1950, 1975 ) )
+		self.flag1 = entities.FlagEntity( "red", ( 50, 50 ) )
+		self.flag2 = entities.FlagEntity( "blue", 
+													( self.world.get_width() - 50,
+													self.world.get_height() - 50 )
+										)
 		self.world.add_entity( self.flag1 )
 		self.world.add_entity( self.flag2 )
 
