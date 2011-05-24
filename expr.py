@@ -48,18 +48,17 @@ rewrite = {
 	r'\[': r'(',
 	r'\]': r')',
 	r'\^': r'**',
-	r'(\d+)([a-z])': r'\g<1> * \g<2>',
-	r'\)([a-z\(])': r') * \g<1>',
+	r'\)([a-z\(])': r') * \g<1>', # ")(" or ")g"
+	r'(\d+)([a-z\(])': r'\g<1> * \g<2>', # "#g" or "#("
+	r'(?:\w*?)(a|u|n|du){1}\(': r'\g<1> * (', # "V(" BUT "f("
 }
 
 def parse(s):
 	'Create a nested-lambda expression from a string.'
-	stmt = s
+	s = s.replace(' ', '')
 	for rule, pattern in rewrite.items():
-		stmt = re.sub(rule, pattern, stmt)
-	if stmt != s:
-		s = stmt
-		print("I'll assume you meant to say '{0}'...".format(s))
+		s = re.sub(rule, pattern, s)
+	print("Re-wrote to {0}...".format(s))
 	return build_expr(ast.parse(s))
 
 ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
@@ -171,27 +170,27 @@ questions = [
 identities = [
 	# Trig Identities
 	("sin(x)^2 + cos(x)^2 = ?", static(1)),
-	("cos(x)^2 = ?", parse("(1 + cos(2*x)) / 2")),
-	("sin(x)^2 = ?", parse("(1 - cos(2*x)) / 2")),
+	("cos(x)^2 = ?", parse("(1 + cos(2x)) / 2")),
+	("sin(x)^2 = ?", parse("(1 - cos(2x)) / 2")),
 	# <Incomplete>
 
 	# Basic Differentiation
 	("d/dx a = ?", static(0)),
-	("d/dx [a * f(x)] = ?", parse("a * dx(x)")),
+	("d/dx a[f(x)] = ?", parse("a[dx(x)]")), #! TODO
 	("d/dx [f(x) + g(x)] = ?", parse("dx(x) + dg(x)")),
-	("d/dx f(x)g(x) = ?", parse("f(x)*dg(x) + dx(x)*g(x)")),
-	("d/dx [1 / f(x)] = ?", parse("-dx(x) / (f(x) ** 2)")),
-	("d/dx f(g(x)) = ?", parse("dx(g(x)) * dg(x)")),
-	("d/dx u^n = ?", parse("n * (u ^ (n - 1))")),
-	("d/dx a^u = ?", parse("ln(a) * (a ^ u)")),
-	("d/dx e^u = ?", parse("du * (e ^ u)")),
-	("d/dx ln(u) = ?", parse("du / u")),
+	("d/dx f(x)g(x) = ?", parse("f(x)dg(x) + dx(x)g(x)")),
+	("d/dx [1 / f(x)] = ?", parse("-dx(x) / (f(x)^2)")),
+	("d/dx f(g(x)) = ?", parse("dx(g(x))dg(x)")),
+	("d/dx u^n = ?", parse("n(u^(n-1))")), #! TODO
+	("d/dx a^u = ?", parse("ln(a)(a^u)")), #! TODO
+	("d/dx e^u = ?", parse("(e^u)du")),
+	("d/dx ln(u) = ?", parse("du/u")),
 	# <Incomplete>
 
 	# Trig Differentiation
-	("d/dx sin(u) = ?", parse("du * cos(u)")),
-	("d/dx cos(u) = ?", parse("du * -sin(u)")),
-	("d/dx tan(u) = ?", parse("du * (sec(u) ^ 2)")),
+	("d/dx sin(u) = ?", parse("cos(u)du")),
+	("d/dx cos(u) = ?", parse("-sin(u)du")),
+	("d/dx tan(u) = ?", parse("(sec(u)^2)du")),
 	# <Incomplete>
 
 	# Integration Formulas
