@@ -219,3 +219,5 @@ def repl():
 		else:
 			action = input("Incorrect. Override (y/n)? ")
 			print("OK. My bad." if 'y' in action.lower() else "Moving on then...")
+
+repl()

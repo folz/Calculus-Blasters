@@ -4,6 +4,7 @@ Created on Jun 30, 2010
 @author: folz
 '''
 
+from multiprocessing import Process
 from engine.Net import netbase
 import pickle, random, socket, threading
 
@@ -47,6 +48,8 @@ class Data:
 	def __repr__( self ):
 		return "X: " + str( self.px ) + " Y: " + str( self.py ) + " id: " + str( self.pId ) + " bullets: " + str( self.bullets )
 
+__main__ = lambda: 1
+
 class Client:
 	def __init__( self, ip, handle_data_func ):
 		self.client = netbase.TCPClient()
@@ -55,19 +58,18 @@ class Client:
 		self.update_game_client = handle_data_func
 		self.running = True
 		self.t = threading.Thread( None, self.update, "T" + str( random.randint( 100, 5000 ) ) )
+		# self.t = Process(group=None, target=self.update, name="T" + str( random.randint( 100, 5000 ) ))
 		self.t.start()
 
 	def kill( self ):
 		self.running = False
 
 	def send_data( self, data ):
-		# send = pickle.dumps( data )
 		self.client.send_data( data )
 
 	def update( self ):
 		while self.running:
 			data = self.client.wait_for_data()
-
 			self.update_game_client( data )
 
 if __name__ == "__main__":

@@ -10,6 +10,7 @@ from engine.misc import *
 import multiplayer
 import managers
 import entities
+import expr
 
 class CalculusBlasters:
 	TITLE = "Calculus Blasters"
