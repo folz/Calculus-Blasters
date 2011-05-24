@@ -18,8 +18,7 @@ class CalculusBlasters:
 		pygame.init()
 
 		self.id = id
-		self.player2 = None
-
+		
 		# set the dimensions of the display window
 		self.SIZE = self.WIDTH, self.HEIGHT = 800, 600
 
@@ -53,7 +52,7 @@ class CalculusBlasters:
 		self.world.set_gravity( geometry.Vector( 0, 9.8 ) )
 		self.world.debug = True
 
-		self.networkBullets = managers.NetworkBulletManager( self.world )
+		#self.networkBullets = managers.NetworkBulletManager( self.world )
 
 		# create the viewport that will view the world
 		self.viewport = viewport.Viewport( self.window, self.world )
@@ -105,20 +104,20 @@ class CalculusBlasters:
 	def use_data( self, data ):
 		if self.player2 is None or data is None:
 			return
-		if data.pId != self.id:
-			self.player2.location = geometry.Vector( data.px, data.py )
-			self.player2.set_facing( data.pf )
+		if data.pid != self.id:
+			self.player2.location = geometry.Vector( data.position_x, data.position_y )
+			self.player2.set_facing( data.player_facing )
 			if self.id == 2:
-				self.flag1.set_facing( data.ff )
-				self.flag2.updateScore( data.s )
-				if data.fc:
+				self.flag1.set_facing( data.flag_facing )
+				self.flag2.update_score( data.score )
+				if data.flag_captured:
 					self.flag1.was_captured_by( self.player2 )
 				else:
 					self.flag1.release()
 			else:
-				self.flag2.set_facing( data.ff )
-				self.flag1.updateScore( data.s )
-				if data.fc:
+				self.flag2.set_facing( data.flag_facing )
+				self.flag1.update_score( data.score )
+				if data.flag_captured:
 					self.flag2.was_captured_by( self.player2 )
 				else:
 					self.flag2.release()
@@ -148,12 +147,12 @@ class CalculusBlasters:
 		self.world.add_terrain( bottom_wall )
 
 	def send_data( self ):
-		bullets = self.player1.gun.bullets
-		bs = []
-		for b in bullets:
-			if not b.sent:
-				bs.append( ( b.location.x, b.location.y, b.velocity.x, b.velocity.y ) )
-				b.sent = True
+		#bullets = self.player1.gun.bullets
+		#bs = []
+		#for b in bullets:
+		#	if not b.sent:
+		#		bs.append( ( b.location.x, b.location.y, b.velocity.x, b.velocity.y ) )
+		#		b.sent = True
 
 		if self.id == 1:
 			flagFace = self.flag1.facing
@@ -164,7 +163,8 @@ class CalculusBlasters:
 			score = self.flag1.score
 			cap = self.flag2.captured
 		data = multiplayer.Data( self.player1.location.x, self.player1.location.y,
-								bs, id, self.player2.hit, self.player1.facing,
+								#bs,
+								id, self.player2.hit, self.player1.facing,
 							flagFace, score, cap )
 		self.client.send_data( data )
 		self.player2.hit = False
@@ -222,7 +222,7 @@ class CalculusBlasters:
 			self.delta_count -= self.FPS
 			self.viewport.render( self.delta )
 
-		self.networkBullets.draw()
+		#self.networkBullets.draw()
 		self.window.screen.blit( self.helveticaFnt.render( "Blue Team Score: " + str( self.flag2.score ), True, ( 0, 0, 255 ), ( 0, 0, 0 ) ), ( 0, 0 ) )
 		self.window.screen.blit( self.helveticaFnt.render( "Red Team Score: " + str( self.flag1.score ), True, ( 255, 0, 0 ), ( 0, 0, 0 ) ), ( 0, 18 ) )
 		pygame.display.flip()

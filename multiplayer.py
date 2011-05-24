@@ -31,26 +31,28 @@ class Server( netbase.TCPServer ):
 		self.quit()
 
 class Data:
-	def __init__( self, playerX, playerY, bullets, id, hit, playerFacing, flagFace, score, flagCapured ):
-		self.px = playerX
-		self.py = playerY
-		self.pId = id
-		self.bullets = bullets
+	def __init__( self, position_x, position_y, 
+				#bullets, 
+				pid, hit, player_facing, flag_facing, score, flag_capured ):
+		self.position_x = position_x
+		self.position_y = position_y
+		#self.bullets = bullets
+		self.pid = pid
 		self.hit = hit
-		self.pf = playerFacing
-		self.ff = flagFace
-		self.s = score
-		self.fc = flagCapured
+		self.player_facing = player_facing
+		self.flag_facing = flag_facing
+		self.score = score
+		self.flag_captured = flag_capured
 
 	def __repr__( self ):
 		return "X: " + str( self.px ) + " Y: " + str( self.py ) + " id: " + str( self.pId ) + " bullets: " + str( self.bullets )
 
 class Client:
-	def __init__( self, ip, stone ):
+	def __init__( self, ip, handle_data_func ):
 		self.client = netbase.TCPClient()
 		self.ip = ip
 		self.client.connect( self.ip, 9999 )
-		self.stone = stone
+		self.update_game_client = handle_data_func
 		self.running = True
 		self.t = threading.Thread( None, self.update, "T" + str( random.randint( 100, 5000 ) ) )
 		self.t.start()
@@ -59,18 +61,14 @@ class Client:
 		self.running = False
 
 	def send_data( self, data ):
-		send = pickle.dumps( data )
-		self.client.send_data( send )
+		# send = pickle.dumps( data )
+		self.client.send_data( data )
 
 	def update( self ):
 		while self.running:
 			data = self.client.wait_for_data()
 
-			try:
-				data = pickle.loads( data )
-			except:
-				continue
-			self.stone( data )
+			self.update_game_client( data )
 
 if __name__ == "__main__":
 	s = Server()

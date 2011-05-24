@@ -1,23 +1,22 @@
 from engine.Net.errors import *
-import zlib
-try:
-	import cPickle as pickle
-except:
-	import pickle as pickle
+import zlib, pickle
 
 def EncodeData(data,compress):
 	data = pickle.dumps(data)
-	if compress != False:
+	if compress:
 		data = zlib.compress(data,compress)
 	length = str(len(data))
 	length = ("0"*(8-len(length)))+length
 	return length,data
 
 def DecodeData(data):
-	try:data = pickle.loads(data)
+	try:
+		data = pickle.loads(data)
 	except: 
-		try: data = pickle.loads(zlib.decompress(data))
-		except:return None
+		try:
+			data = pickle.loads(zlib.decompress(data))
+		except:
+			return None
 	return data
 
 def SendData(sock,data,compress,includelength=False,address=None):

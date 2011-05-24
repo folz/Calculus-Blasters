@@ -121,7 +121,7 @@ class FlagEntity( entity.CollidableEntity ):
 		if self.captured and self.capturer != None:
 			pass
 
-	def updateScore( self, score ):
+	def update_score( self, score ):
 		self.score = score
 
 	def check_collisions( self, delta ):
