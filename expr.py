@@ -12,6 +12,7 @@ static = lambda k: lambda x: k
 unary = {
 	"ln": math.log,
 	"exp": math.exp,
+	"abs": math.abs,
 	"sqrt": math.sqrt,
 	"sin": math.sin,
 	"cos": math.cos,
@@ -187,18 +188,24 @@ identities = [
 	("d/dx a[f(x)] = ?", parse("a[dx(x)]")),
 	("d/dx [f(x) + g(x)] = ?", parse("dx(x) + dg(x)")),
 	("d/dx f(x)g(x) = ?", parse("f(x)dg(x) + dx(x)g(x)")),
-	("d/dx [1 / f(x)] = ?", parse("-dx(x) / (f(x)^2)")),
+	("d/dx f(x)/g(x) = ?", parse("[dx(x)g(x) - f(x)dg(x)] / g(x)^2")),
+	("d/dx [1 / f(x)] = ?", parse("-dx(x) / f(x)^2")),
 	("d/dx f(g(x)) = ?", parse("dx(g(x))dg(x)")),
 	("d/dx u^n = ?", parse("n(u^(n-1))")),
-	("d/dx a^u = ?", parse("ln(a)(a^u)")),
-	("d/dx e^u = ?", parse("(e^u)du")),
+	("d/dx a^u = ?", parse("ln(a)(a^u) du")),
+	("d/dx log_a(u) = ?", parse("du/(u * ln(a))")),
+	("d/dx e^u = ?", parse("(e^u) du")),
 	("d/dx ln(u) = ?", parse("du/u")),
 	# <Incomplete>
 
 	# Trig Differentiation
-	("d/dx sin(u) = ?", parse("cos(u)du")),
-	("d/dx cos(u) = ?", parse("-sin(u)du")),
-	("d/dx tan(u) = ?", parse("(sec(u)^2)du")),
+	("d/dx sin(u) = ?", parse("cos(u) du")),
+	("d/dx cos(u) = ?", parse("-sin(u) du")),
+	("d/dx tan(u) = ?", parse("(sec(u)^2) du")),
+	("d/dx sec(u) = ?", parse("sec(u)tan(u) du")),
+	("d/dx csc(u) = ?", parse("-csc(u)cot(u) du")),
+	("d/dx cot(u) = ?", parse("-(csc(u)^2) du")),
+
 	# <Incomplete>
 
 	# Integration Formulas
