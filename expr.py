@@ -1,7 +1,8 @@
+import re
 import ast
+import random
 import math
 import operator
-import random
 
 h = 10 ** -8
 N = int(math.sqrt(1 / h))
@@ -29,7 +30,6 @@ binary = {
 	ast.Mult: ('*', operator.mul),
 	ast.Div: ('/', operator.truediv),
 	ast.Pow: ('^', math.pow),
-	ast.BitXor: ('^', math.pow),
 }
 
 special = {
@@ -38,19 +38,28 @@ special = {
 	ast.USub: lambda x: -x,
 }
 
-def add_special_vars(names):
-	for name in names:
-		special[name] = idhash(name)
+for name in ["u", "n", "a", "du"]:
+	special[name] = idhash(name)
 
-def add_special_funcalls(names):
-	for name in names:
-		special[name] = lambda x: x + idhash(name)
+for name in ["f", "g", "dx", "dg"]:
+	special[name] = lambda x: x + idhash(name)
 
-add_special_vars(["u", "n", "a", "du"])
-add_special_funcalls(["f", "g", "dx", "dg"])
+rewrite = {
+	r'\[': r'(',
+	r'\]': r')',
+	r'\^': r'**',
+	r'(\d+)([a-z])': r'\g<1> * \g<2>',
+	r'\)([a-z\(])': r') * \g<1>',
+}
 
 def parse(s):
 	'Create a nested-lambda expression from a string.'
+	stmt = s
+	for rule, pattern in rewrite.items():
+		stmt = re.sub(rule, pattern, stmt)
+	if stmt != s:
+		s = stmt
+		print("I'll assume you meant to say '{0}'...".format(s))
 	return build_expr(ast.parse(s))
 
 ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
@@ -125,7 +134,7 @@ def equal(lhs, rhs):
 	'Compare floats for equality.'
 	return abs(lhs - rhs) < 0.005
 
-domain = [0, .5, 1, 2, 5, 10, 16, math.e, math.pi]
+domain = [0, .5, 1, 2, 9, 16, 25, math.e, math.pi]
 domain.extend([-elt for elt in domain])
 
 def check(lfx, rfx):
@@ -164,23 +173,29 @@ identities = [
 	("sin(x)^2 + cos(x)^2 = ?", static(1)),
 	("cos(x)^2 = ?", parse("(1 + cos(2*x)) / 2")),
 	("sin(x)^2 = ?", parse("(1 - cos(2*x)) / 2")),
+	# <Incomplete>
 
 	# Basic Differentiation
+	("d/dx a = ?", static(0)),
+	("d/dx [a * f(x)] = ?", parse("a * dx(x)")),
+	("d/dx [f(x) + g(x)] = ?", parse("dx(x) + dg(x)")),
+	("d/dx f(x)g(x) = ?", parse("f(x)*dg(x) + dx(x)*g(x)")),
+	("d/dx [1 / f(x)] = ?", parse("-dx(x) / (f(x) ** 2)")),
+	("d/dx f(g(x)) = ?", parse("dx(g(x)) * dg(x)")),
 	("d/dx u^n = ?", parse("n * (u ^ (n - 1))")),
 	("d/dx a^u = ?", parse("ln(a) * (a ^ u)")),
 	("d/dx e^u = ?", parse("du * (e ^ u)")),
 	("d/dx ln(u) = ?", parse("du / u")),
-	("d/dx f(g(x)) = ?", parse("dx(g(x)) * dg(x)")),
-	("d/dx f(x)g(x) = ?", parse("f(x)*dg(x) + dx(x)*g(x)")),
+	# <Incomplete>
 
 	# Trig Differentiation
 	("d/dx sin(u) = ?", parse("du * cos(u)")),
 	("d/dx cos(u) = ?", parse("du * -sin(u)")),
 	("d/dx tan(u) = ?", parse("du * (sec(u) ^ 2)")),
+	# <Incomplete>
 
 	# Integration Formulas
-	# Surface area, polar, arclen
-	# ("
+	# Volume, surface area, polar area, arclen, parametrics...
 ]
 
 def generate():
