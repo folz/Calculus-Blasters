@@ -5,18 +5,8 @@ import random
 
 h = 10 ** -8
 N = int(math.sqrt(1 / h))
-idhash = lambda s: hash(s) % (10 ** 4) 
+idhash = lambda s: hash(s) % (10 ** 3)
 static = lambda k: lambda x: k
-
-const = {
-	"e": math.e,
-	"pi": math.pi,
-	"u": idhash("u"),
-	"n": idhash("n"),
-	"a": idhash("a"),
-	"du": idhash("du"),
-	ast.USub: lambda x: -x,
-}
 
 unary = {
 	"ln": math.log,
@@ -34,13 +24,30 @@ unary = {
 }
 
 binary = {
-	ast.Add: 	('+', operator.add),
-	ast.Sub: 	('-', operator.sub),
-	ast.Mult: 	('*', operator.mul),
-	ast.Div: 	('/', operator.truediv),
-	ast.Pow: 	('^', math.pow),
-	ast.BitXor: 	('^', math.pow),
+	ast.Add: ('+', operator.add),
+	ast.Sub: ('-', operator.sub),
+	ast.Mult: ('*', operator.mul),
+	ast.Div: ('/', operator.truediv),
+	ast.Pow: ('^', math.pow),
+	ast.BitXor: ('^', math.pow),
 }
+
+special = {
+	"e": math.e,
+	"pi": math.pi,
+	ast.USub: lambda x: -x,
+}
+
+def add_special_vars(names):
+	for name in names:
+		special[name] = idhash(name)
+
+def add_special_funcalls(names):
+	for name in names:
+		special[name] = lambda x: x + idhash(name)
+
+add_special_vars(["u", "n", "a", "du"])
+add_special_funcalls(["f", "g", "dx", "dg"])
 
 def parse(s):
 	'Create a nested-lambda expression from a string.'
@@ -61,7 +68,7 @@ def build_expr(node):
 def lambdify(node):
 	'Convert AST nodes to their lambda equivalents.'
 	if isinstance(node, ast.Name):
-		return lambda x: const.get(node.id, x)
+		return lambda x: special.get(node.id, x)
 	elif isinstance(node, ast.Num):
 		return static(node.n)
 	elif isinstance(node, ast.BinOp):
@@ -69,10 +76,11 @@ def lambdify(node):
 		lfx, rfx = map(lambdify, (node.left, node.right))
 		return lambda x: fn(lfx(x), rfx(x))
 	elif isinstance(node, ast.Call):
-		func = unary[node.func.id]
+		name = node.func.id
+		func = unary.get(name, special.get(name))
 		fx = lambdify(node.args[0])
 	elif isinstance(node, ast.UnaryOp):
-		func = const[type(node.op)]
+		func = special[type(node.op)]
 		fx = lambdify(node.operand)
 	return lambda x: func(fx(x))
 
@@ -115,10 +123,10 @@ def func_infix(elt):
 
 def equal(lhs, rhs):
 	'Compare floats for equality.'
-	return abs(lhs - rhs) < 0.010
+	return abs(lhs - rhs) < 0.005
 
-domain = [0, .5, 1, 2, math.e, math.pi]
-domain.extend([val for val in [(elt / 2, elt / 4, elt ** 2) for elt in domain[1:]]])
+domain = [0, .5, 1, 2, 5, 10, 16, math.e, math.pi]
+domain.extend([-elt for elt in domain])
 
 def check(lfx, rfx):
 	'Check if two functions are equivalent.'
@@ -130,7 +138,7 @@ def check(lfx, rfx):
 		except:
 			denom -= 1
 	print("Score = {0}/{1}...".format(score, denom))
-	return score / denom > .5 if denom else False
+	return score / denom > .5 if denom > (len(domain) / 2) else False
 
 def differentiate(fx, k):
 	return (fx(k + h) - fx(k)) / h
@@ -162,6 +170,8 @@ identities = [
 	("d/dx a^u = ?", parse("ln(a) * (a ^ u)")),
 	("d/dx e^u = ?", parse("du * (e ^ u)")),
 	("d/dx ln(u) = ?", parse("du / u")),
+	("d/dx f(g(x)) = ?", parse("dx(g(x)) * dg(x)")),
+	("d/dx f(x)g(x) = ?", parse("f(x)*dg(x) + dx(x)*g(x)")),
 
 	# Trig Differentiation
 	("d/dx sin(u) = ?", parse("du * cos(u)")),
