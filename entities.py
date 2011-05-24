@@ -8,6 +8,12 @@ import math, pygame, sys
 from pygame.locals import *
 from engine import *
 
+def frac( delta ):
+	return delta / 1000
+
+def ppv( delta ):
+	return entity.Entity.PIXELSPERVECTOR / delta
+
 class BulletEntity( entity.CollidableEntity ):
 	'''
 	A Bullet is something you shoot. It is handled by a BulletManager
@@ -45,7 +51,7 @@ class BulletEntity( entity.CollidableEntity ):
 		self.networkBullet()
 
 		if self.used:
-			self.bulletmanager.removeBullet( self )
+			self.bulletmanager.remove_bullet( self )
 			del self
 			return
 
@@ -66,7 +72,7 @@ class BulletEntity( entity.CollidableEntity ):
 		if self.location.x < 0 or self.location.x > self.world.get_width() or self.location.y < 0 or self.location.y > self.world.get_height():
 			self.bulletmanager.bullets.remove( self )
 
-	def check_collisions( self ):
+	def check_collisions( self, delta ):
 		if not self.used:
 			self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 			for terrain in self.world.get_terrain():
@@ -74,10 +80,10 @@ class BulletEntity( entity.CollidableEntity ):
 				if mtd != False:
 					self.used = True
 		else:
-			self.bulletmanager.removeBullet( self )
+			self.bulletmanager.remove_bullet( self )
 			del self
 
-class FlagEntity( entity.Entity ):
+class FlagEntity( entity.CollidableEntity ):
 
 	def __init__( self, team, location=geometry.Vector( 0, 0 ), velocity=geometry.Vector( 0, 0 ) ):
 		'''
@@ -86,7 +92,7 @@ class FlagEntity( entity.Entity ):
 		self.start = geometry.Vector( location[0], location[1] )
 		entity.Entity.__init__( self, "flag_%s.png" % team, location, velocity )
 		self.facing = "right"
-		self.wasFacing = self.facing
+		self.was_facing = self.facing
 		self.team = team
 		self.captured = False
 		self.capturer = None
@@ -94,7 +100,7 @@ class FlagEntity( entity.Entity ):
 		self.score = 0
 
 	def set_facing( self, newFacing ):
-		self.wasFacing = self.facing
+		self.was_facing = self.facing
 		self.facing = newFacing
 
 	def was_captured_by( self, entity ):
@@ -105,7 +111,7 @@ class FlagEntity( entity.Entity ):
 	def release( self ):
 		if self.capturer is not None:
 			self.capturer.flag1 = None
-			self.capturer.hasFlag = False
+			self.capturer.has_flag = False
 		self.facing = "right"
 		self.captured = False
 		self.capturer = None
@@ -114,12 +120,11 @@ class FlagEntity( entity.Entity ):
 	def move( self, delta ):
 		if self.captured and self.capturer != None:
 			pass
-		self.checkCollisions()
 
 	def updateScore( self, score ):
 		self.score = score
 
-	def checkCollisions( self ):
+	def check_collisions( self, delta ):
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
 		if not self.captured:
 			for player in self.world.get_entities_by_attribute( "player" ):
@@ -127,11 +132,11 @@ class FlagEntity( entity.Entity ):
 					mtd = self.bounding_poly.collide( player.bounding_poly )
 					if mtd != False:
 						self.was_captured_by( player )
-						player.hasFlag = True
+						player.has_flag = True
 						print( "captured" )
 				else:
 					mtd = self.bounding_poly.collide( player.bounding_poly )
-					if mtd != False and player.hasFlag and self.captured == False:
+					if mtd != False and player.has_flag and self.captured == False:
 						player.flag1.release()
 						self.score += 1
 						print( "SCORED" )
@@ -145,7 +150,7 @@ class FlagEntity( entity.Entity ):
 				self.location.x = self.capturer.location.x - self.capturer.get_width() / 2
 				self.location.y = self.capturer.location.y
 
-		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
+		self.rect = pygame.Rect( self.bounding_poly.real_points[0][0], self.bounding_poly.real_points[0][1], self.bounding_poly.width, self.bounding_poly.height )
 
 	def draw( self ):
 		if self.facing == "right" and self.scale == -1:
@@ -156,16 +161,14 @@ class FlagEntity( entity.Entity ):
 			self.scale = -1
 
 		entity.Entity.draw( self )
-		self.wasFacing = self.facing
+		self.was_facing = self.facing
 
 class PlayerEntity( entity.CollidableEntity ):
 	'''
 	classdocs
 	'''
 
-	MAXXSPEED = 9.8
-	MAXUPSPEED = 9.8
-	MAXDOWNSPEED = 9.8
+	SPEED = 4.9
 
 	def __init__( self, team, location=geometry.Vector( 0, 0 ), image="rocketplok.gif", velocity=geometry.Vector( 0, 0 ) ):
 		'''
@@ -173,14 +176,14 @@ class PlayerEntity( entity.CollidableEntity ):
 		'''
 		entity.Entity.__init__( self, image, location, velocity )
 		self.moving = False
-		self.startLocation = location
-		self.wasFacing = "right"
-		self.facing = "right"
-		self.jumping = True
+		self.flying = False
 		self.shooting = False
+		self.startLocation = location
+		self.was_facing = "right"
+		self.facing = "right"
 		self.gun = None
 		self.team = team
-		self.hasFlag = False
+		self.has_flag = False
 		self.flag1 = None
 		self.hit = False
 		self.health = 10
@@ -189,122 +192,149 @@ class PlayerEntity( entity.CollidableEntity ):
 
 	def reset( self ):
 		self.moving = False
-		self.wasFacing = "right"
-		self.facing = "right"
-		self.jumping = True
+		self.flying = True
 		self.shooting = False
+		self.was_facing = "right"
+		self.facing = "right"
 		self.hit = False
 		self.health = 10
 		self.location = geometry.Vector( self.startLocation[0], self.startLocation[1] )
 		self.death_cooldown = 0
-		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
+		self.rect = pygame.Rect( self.bounding_poly.real_points[0][0], self.bounding_poly.real_points[0][1], self.bounding_poly.width, self.bounding_poly.height )
 
 	def set_facing( self, newFace ):
-		self.wasFacing = self.facing
+		self.was_facing = self.facing
 		self.facing = newFace
 
 	def was_hit( self ):
-		if self.hasFlag:
-			self.hasFlag = False
+		if self.has_flag:
+			self.has_flag = False
 			self.flag1.release()
 		self.health -= 1
 		if self.health == 0:
 			self.reset()
 
 	def take_hit( self ):
-		if self.hasFlag:
-			self.hasFlag = False
+		if self.has_flag:
+			self.has_flag = False
 			self.flag1.release()
 		self.hit = True
 
 	def move_left( self ):
 		self.moving = True
 		self.facing = "left"
-		self.velocity.x -= .6
 
 	def move_right( self ):
 		self.moving = True
 		self.facing = "right"
-		self.velocity.x += .6
 
-	def fly( self ):
-		self.jumping = True
+	def stop_moving( self ):
+		self.moving = False
+
+	def jump( self ):
+		self.flying = True
+
+	def stop_jumping( self ):
+		self.flying = False
 
 	def add_gun( self, gun ):
 		self.gun = gun
 
+	def debug( self, prnt ):
+		if self.team == "blue":
+			print( prnt )
+
 	def shoot( self ):
-		if not self.death_cooldown == 200: return
+		if not self.death_cooldown == 200:
+			return
+
 		offset = 0
 		if self.facing == "left":
-			xvel = -20 + self.velocity.x * .2
+			xvel = -BulletEntity.MAX_SPEED_X + self.velocity.x * .2
 			offset = -self.get_width() - 1
 		elif self.facing == "right":
-			xvel = 20 + self.velocity.x * .2
+			xvel = BulletEntity.MAX_SPEED_X + self.velocity.x * .2
 			offset = self.get_width() + 1
-		self.gun.addBullet( ( self.location.x + offset, self.location.y + self.get_height() / 2 ), ( xvel, 0 ), self.facing ) # TODO get velocity based on user mouse position
+		self.gun.add_bullet( ( self.location.x + offset, self.location.y + self.get_height() / 2 ), ( xvel, 0 ), self.facing ) # TODO get velocity based on user mouse position
 
 	def move( self, delta ):
 		if not self.death_cooldown == 200:
 			self.death_cooldown += 1
 			return
-		
-		# If we're trying to jump or fly or whatever you want to call it
-		if self.jumping:
-			self.velocity += geometry.Vector( 0, -29.4 ) * ( delta / 1000 )
-		
-		# If the entity has a non-zero velocity but we're not moving, slow it down 
-		if ( abs( self.velocity.x ) > .001 and not self.moving ):
-			self.velocity.x *= .5
 
-		self.velocity += self.world.gravity * ( delta / 1000  )
+		# If we're moving left or right, find out which direction and how far
+		if self.moving:
+			self.velocity += geometry.Vector( 
+											- self.SPEED if self.facing == "left" else self.SPEED,
+											0 ) * frac( delta )
 
-		if self.velocity.x > self.MAXXSPEED:
-			self.velocity.x = self.MAXXSPEED
-		if self.velocity.x < -self.MAXXSPEED:
-			self.velocity.x = -self.MAXXSPEED
-		if self.velocity.y > self.MAXUPSPEED:
-			self.velocity.y = self.MAXUPSPEED
-		if self.velocity.y < -self.MAXDOWNSPEED:
-			self.velocity.y = -self.MAXDOWNSPEED
+		# If we're trying to fly
+		if self.flying:
+			self.velocity += geometry.Vector( 0, -3 * self.SPEED ) * frac( delta )
 
-		self.location.x += self.velocity.x * ( PlayerEntity.PIXELSPERVECTOR / delta )
-		self.location.y += self.velocity.y * ( PlayerEntity.PIXELSPERVECTOR / delta )
+		self.velocity += self.world.gravity * frac( delta )
 
-		print( "Velocity: {0}".format( self.velocity ) )
+		if self.velocity.x > self.SPEED:
+			self.velocity.x = self.SPEED
+		if self.velocity.x < -self.SPEED:
+			self.velocity.x = -self.SPEED
+		if self.velocity.y > self.SPEED:
+			self.velocity.y = self.SPEED
+		if self.velocity.y < -self.SPEED:
+			self.velocity.y = -self.SPEED
 
-		self.gun.shoot( delta )
+		self.debug( "\n" + str( self.velocity ) )
 
-		self.moving = False
-		self.jumping = False
+		self.location.x += self.velocity.x * ppv( delta )
+		self.location.y += self.velocity.y * ppv( delta )
 
-	def check_collisions( self ):
+		#self.gun.shoot( delta )
+
+	def check_collisions( self, delta ):
 		if not self.death_cooldown == 200:
 			return
+		
 		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
+		
+		standing_on_something = False
+		
 		for terrain in self.world.get_terrain():
-			mtd = self.bounding_poly.collide( terrain )
+			if terrain.is_on_screen():
+				mtd = self.bounding_poly.collide( terrain )
+			else:
+				continue
 
-			if mtd != False: # if we're colliding with the terrain
+			if mtd != False: # If we're colliding with this terrain
 				self.location += mtd # adjust our position so that we're not colliding anymore
 
 				if self.bounding_poly.isAbove == True: # if we're above whatever we're colliding with
+					standing_on_something = True
 					self.velocity.y = 0
 				elif self.bounding_poly.isAbove == False: # if we're below whatever we're colliding with
 					self.velocity.y = 0
-				elif self.bounding_poly.isAbove == None: # this shouldn't happen, but sometimes it comes back neither true nor false
-					pass
 
 				elif self.bounding_poly.isLeft == True: # if we're to the left of whatever we're colliding with
 					self.velocity.x = 0
 				elif self.bounding_poly.isLeft == False: #if we're to the right of whatever we're colliding with
 					self.velocity.x = 0
-				elif self.bounding_poly.isLeft == None: # this shouldn't happen, but sometimes it comes back neither true nor false
-					pass
-			else: # we're not colliding with anything
-				pass#self.jumping = True
+		
+		if standing_on_something and not self.moving:
+			# If the entity has a non-zero velocity but we're not moving, slow it down 
+			if self.velocity.x < 0:
+				if self.velocity.x > PlayerEntity.SPEED * frac( delta ):
+					self.velocity += geometry.Vector( self.SPEED, 0 ) * frac( delta )
+				else:
+					self.velocity.x = 0
+			elif self.velocity.x > 0:
+				if self.velocity.x < - PlayerEntity.SPEED * frac( delta ):
+					self.velocity += geometry.Vector( - self.SPEED, 0 ) * frac( delta )
+				else:
+					self.velocity.x = 0
 
-		self.rect = pygame.Rect( self.bounding_poly.realPoints[0][0], self.bounding_poly.realPoints[0][1], self.bounding_poly.width, self.bounding_poly.height )
+
+		self.debug( "Velocity: {0}; MTD: {1}".format( self.velocity, mtd ) )
+
+		self.rect = pygame.Rect( self.bounding_poly.real_points[0][0], self.bounding_poly.real_points[0][1], self.bounding_poly.width, self.bounding_poly.height )
 		self.wasVelocity = self.velocity
 
 	def draw( self ):
@@ -316,5 +346,4 @@ class PlayerEntity( entity.CollidableEntity ):
 			self.scale = -1
 
 		entity.Entity.draw( self )
-		self.wasFacing = self.facing
-
+		self.was_facing = self.facing

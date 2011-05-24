@@ -22,7 +22,7 @@ class BulletManager:
 			b.move( delta )
 			b.draw()
 
-	def addBullet( self, location, velocity, facing="right" ):
+	def add_bullet( self, location, velocity, facing="right" ):
 		nowshot = pygame.time.get_ticks()
 		if ( nowshot - self.lastshot ) > 150:
 			self.lastshot = nowshot
@@ -31,7 +31,7 @@ class BulletManager:
 			b.set_world_callback( self.entity.world )
 			b.setBulletManagerCallback( self )
 
-	def removeBullet( self, bullet ):
+	def remove_bullet( self, bullet ):
 		if bullet in self.bullets:
 			self.bullets.remove( bullet )
 			del bullet
@@ -45,22 +45,22 @@ class NetworkBulletManager:
 	def fromNetwork( self, bullets ):
 		if len( bullets ) == 0: return
 		for b in self.bullets:
-			self.removeBullet( b )
+			self.remove_bullet( b )
 		for b in bullets:
-			self.addBullet( geometry.Vector( b[0], b[1] ) )
+			self.add_bullet( geometry.Vector( b[0], b[1] ) )
 
 	def draw( self ):
 		for b in self.bullets:
 			b.draw()
 
-	def addBullet( self, location ):
+	def add_bullet( self, location ):
 		b = BulletEntity( location, ( 0, 0 ), "right" )
 		self.bullets.append( b )
 		b.set_world_callback( self.world )
 		b.setBulletManagerCallback( self )
 		b.draw()
 
-	def removeBullet( self, bullet ):
+	def remove_bullet( self, bullet ):
 		if bullet in self.bullets:
 			self.bullets.remove( bullet )
 			del bullet

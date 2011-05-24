@@ -89,12 +89,10 @@ class CollidableEntity( Entity ):
 	def real_move( self, delta ):
 		Entity.real_move( self, delta )
 
-		self.move( delta )
-
-		self.check_collisions()
+		self.check_collisions( delta )
 
 	def move( self, delta ):
 		pass
 
-	def check_collisions( self ):
+	def check_collisions( self, delta ):
 		pass

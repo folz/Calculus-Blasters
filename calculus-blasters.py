@@ -13,13 +13,12 @@ import entities
 
 class CalculusBlasters:
 	TITLE = "Calculus Blasters"
-	
+
 	def __init__( self, id, svrip ):
 		pygame.init()
 
 		self.id = id
-		self.svrip = svrip
-		self.client = multiplayer.Client( self.svrip, self.use_data )
+		self.client = multiplayer.Client( svrip, self.use_data )
 		self.player2 = None
 
 		# set the dimensions of the display window
@@ -37,7 +36,7 @@ class CalculusBlasters:
 		self.window.set_title( CalculusBlasters.TITLE )
 		self.window.set_flags( pygame.HWSURFACE | pygame.DOUBLEBUF )# | pygame.FULLSCREEN )
 		self.window.display()
-		
+
 		self.helveticaFnt = pygame.font.SysFont( "Arial", 16, True, False )
 
 		self.clock = pygame.time.Clock()
@@ -50,7 +49,7 @@ class CalculusBlasters:
 			pygame.K_x : False
 		}
 
-		self.world = world.World( ( 2000, 2000 ) )
+		self.world = world.World( ( 3000, 800 ) )
 		self.world.set_background( "giantbg.png" )
 		self.world.set_gravity( geometry.Vector( 0, 9.8 ) )
 		self.world.debug = True
@@ -169,9 +168,9 @@ class CalculusBlasters:
 				self.running = False
 
 			elif event.type in ( pygame.KEYDOWN, pygame.KEYUP ):
-				self.handle_keys( event )
+				self._handle_keys( event )
 
-	def handle_keys( self, keyEvent ):
+	def _handle_keys( self, keyEvent ):
 		key = keyEvent.key
 
 		if keyEvent.type == pygame.KEYDOWN:
@@ -189,8 +188,10 @@ class CalculusBlasters:
 		if self.keys[pygame.K_RIGHT]:
 			self.player1.move_right()
 
-		if self.keys[pygame.K_z]:
-			self.player1.fly()
+		if not self.keys[pygame.K_LEFT] ^ self.keys[pygame.K_RIGHT]:
+			self.player1.stop_moving()
+
+		self.player1.jump() if self.keys[pygame.K_z] else self.player1.stop_jumping()
 
 		if self.keys[pygame.K_x]:
 			self.player1.shoot()
@@ -200,8 +201,8 @@ class CalculusBlasters:
 		# Timing controls
 		self.delta = self.clock.tick()
 		self.delta_count += self.delta
-		
-		self.window.set_title("{0} (FPS: {1})".format( CalculusBlasters.TITLE, 1000 / self.delta_count ) )
+
+		self.window.set_title( "{0} (FPS: {1})".format( CalculusBlasters.TITLE, 1000 / self.delta_count ) )
 
 		self.handle_events()
 		self.do_logic()
@@ -220,5 +221,6 @@ class CalculusBlasters:
 
 if __name__ == "__main__":
 	id = int ( input ( "id? " ) )
-	svrip = input ( "server ip? " )
-	CalculusBlasters( id, svrip )
+	#svrip = input ( "server ip? " )
+	CalculusBlasters( id, "192.168.56.1" )
+
