@@ -81,25 +81,23 @@ class CalculusBlasters:
 		self.player2.add_gun( managers.BulletManager( self.player2 ) )
 
 		self.flag1 = entities.FlagEntity( "red", ( 50, 50 ) )
-		self.flag2 = entities.FlagEntity( "blue", 
+		self.flag2 = entities.FlagEntity( "blue",
 													( self.world.get_width() - 50,
 													self.world.get_height() - 50 )
 										)
 		self.world.add_entity( self.flag1 )
 		self.world.add_entity( self.flag2 )
 
-		self.polygons = ()
-
 		self.viewport.follow( self.player1 )
-
-		self.running = True
 
 		self.delta = 0.0
 		self.delta_count = 0.0
 
 		self.make_terrain()
-		
+
 		self.client = multiplayer.Client( svrip, self.use_data )
+
+		self.running = True
 
 		while self.running:
 			self.game_loop()
@@ -216,7 +214,7 @@ class CalculusBlasters:
 
 		self.handle_events()
 		self.do_logic()
-		
+
 		self.viewport.update( self.delta )
 		self.send_data()
 
