@@ -91,3 +91,4 @@ class GameWindow:
 			self.visible = True
 		else:
 			pass
+

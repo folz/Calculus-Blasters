@@ -101,3 +101,4 @@ class World( pygame.Surface, pygame.sprite.Group ):
 		for entity in self.sprites():
 			if entity.is_on_screen():
 				entity.draw()
+

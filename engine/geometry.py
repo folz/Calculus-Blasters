@@ -33,7 +33,7 @@ class Vector:
 		return Vector( self.x * scalar, self.y * scalar )
 
 	__rmul__ = __mul__
-	
+
 	def __div__( self, scalar ):
 		return 1.0 / scalar * self
 
@@ -79,10 +79,10 @@ class Polygon:
 		else:
 			self.points = []
 		self.points = []
-		self.realPoints = []
+		self.real_points = []
 		for p in points:
 			self.points.append( Vector( *p ) )
-			self.realPoints.append( ( p ) )
+			self.real_points.append( ( p ) )
 
 		self.edges = []
 		self.isAbove = False
@@ -166,18 +166,18 @@ class Polygon:
 	def move( self, amount ):
 		self.pos += amount
 		temp = []
-		for p in self.realPoints:
+		for p in self.real_points:
 			p = ( p[0] + amount.x, p[1] + amount.y )
 			temp.append( p )
-		self.realPoints = temp
+		self.real_points = temp
 
 	def update_pos( self, mtd ):
 		self.pos += mtd
 		temp = []
-		for p in self.realPoints:
+		for p in self.real_points:
 			p = ( p[0] + mtd.x, p[1] + mtd.y )
 			temp.append( p )
-		self.realPoints = temp
+		self.real_points = temp
 
 	def find_mtd( self, push_vectors ):
 		mtd = push_vectors[0]
@@ -198,14 +198,14 @@ class Rect( Polygon ):
 	def __init__( self, x, y, w, h ):
 		points = [( 0, 0 ), ( w, 0 ), ( w, h ), ( 0, h )]
 		Polygon.__init__( self, points, ( x, y ) )
-		self.realPoints = [( x, y ), ( x + w, y ), ( x + w, y + h ), ( x, y + h )]
+		self.real_points = [( x, y ), ( x + w, y ), ( x + w, y + h ), ( x, y + h )]
 		self.x = x
 		self.y = y
 		self.width = w
 		self.height = h
 
 	def __repr__( self ):
-		return "Rect (%d, %d), (%d, %d)" % ( self.realPoints[0][0], self.realPoints[0][1], self.realPoints[1][0], self.realPoints[2][1] )
+		return "Rect (%d, %d), (%d, %d)" % ( self.real_points[0][0], self.real_points[0][1], self.real_points[1][0], self.real_points[2][1] )
 
 class GameBox( Rect ):
 
@@ -227,13 +227,16 @@ class Slope( Line ):
 		Line.__init__( self, points, ( 0, 0 ) )
 
 	def __repr__( self ):
-		return "Slope (%d, %d); (%d, %d)" % ( self.realPoints[0][0], self.realPoints[0][1], self.realPoints[1][0], self.realPoints[1][1] )
+		return "Slope (%d, %d); (%d, %d)" % ( self.real_points[0][0], self.real_points[0][1], self.real_points[1][0], self.real_points[1][1] )
 
 	def debug( self ):
-		pygame.draw.line( self.world, ( 255, 255, 255 ), self.realPoints[0], self.realPoints[1] )
+		pygame.draw.line( self.world, ( 255, 255, 255 ), self.real_points[0], self.real_points[1] )
 
 	def set_world_callback( self, world ):
 		self.world = world
+
+	def is_on_screen( self ):
+		return True
 
 class Terrain( Polygon ):
 	'''
@@ -249,10 +252,12 @@ class Terrain( Polygon ):
 
 	def debug( self ):
 		if not self.is_on_screen(): return
-		pygame.draw.polygon( self.world, ( 255, 255, 255 ), self.realPoints )
+		pygame.draw.polygon( self.world, ( 255, 255, 255 ), self.real_points )
 
 	def set_world_callback( self, world ):
 		self.world = world
 
 	def is_on_screen( self ):
 		return self.location.x + self.width >= self.world.viewport.get_x_coord() and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() and self.location.y + self.height >= self.world.viewport.get_y_coord() and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
+
+

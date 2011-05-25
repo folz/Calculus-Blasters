@@ -99,3 +99,4 @@ class Viewport:
 		buffer.blit( self.world, ( 0, 0 ), pygame.Rect( ( self.xCoord, self.yCoord ), ( self.xCoord + self.window.get_width(), self.yCoord + self.window.get_height() ) ) )
 
 		self.window.screen.blit( buffer, self.vpRenderOffset )
+

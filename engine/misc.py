@@ -40,3 +40,4 @@ def load_sound( name ):
 		print( "Cannot load sound %s" % name )
 		raise SystemExit( message )
 	return sound
+

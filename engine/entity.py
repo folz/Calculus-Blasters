@@ -13,9 +13,9 @@ class Entity( pygame.sprite.Sprite ):
 	'''
 	An entity represents any element that appears in a World
 	'''
-	
+
 	PIXELSPERVECTOR = 1
-	
+
 	def __init__( self, image=None,
 				location=geometry.Vector( 0, 0 ),
 				velocity=geometry.Vector( 0, 0 ) ):
@@ -89,12 +89,11 @@ class CollidableEntity( Entity ):
 	def real_move( self, delta ):
 		Entity.real_move( self, delta )
 
-		self.move( delta )
-
-		self.check_collisions()
+		self.check_collisions( delta )
 
 	def move( self, delta ):
 		pass
 
-	def check_collisions( self ):
+	def check_collisions( self, delta ):
 		pass
+
