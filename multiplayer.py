@@ -48,8 +48,6 @@ class Data:
 	def __repr__( self ):
 		return "X: " + str( self.px ) + " Y: " + str( self.py ) + " id: " + str( self.pId ) + " bullets: " + str( self.bullets )
 
-__main__ = lambda: 1
-
 class Client:
 	def __init__( self, ip, handle_data_func ):
 		self.client = netbase.TCPClient()
