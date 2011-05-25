@@ -96,4 +96,3 @@ class CollidableEntity( Entity ):
 
 	def check_collisions( self, delta ):
 		pass
-
