@@ -4,7 +4,7 @@ import random
 import math
 import operator
 
-h = 10 ** -8
+h = 10 ** -5
 N = int(math.sqrt(1 / h))
 idhash = lambda s: hash(s) % (10 ** 3)
 static = lambda k: lambda x: k
@@ -182,11 +182,11 @@ identities = [
 	("sin(x)^2 + cos(x)^2 = ?", static(1)),
 	("cos(x)^2 = ?", parse("(1 + cos(2x)) / 2")),
 	("sin(x)^2 = ?", parse("(1 - cos(2x)) / 2")),
-	
+
 	# Tan/Cot Identities
 	("sin(u)/cos(u) = ?", parse("tan(u)")),
 	("cos(u)/sin(u) = ?", parse("cot(u)")),
-	
+
 	# Reciprocal Identities
 	("1/sin(u) = ?", parse("csc(u)")),
 	("1/cos(u) = ?", parse("sec(u)")),
@@ -194,45 +194,45 @@ identities = [
 	("1/csc(u) = ?", parse("sin(u)")),
 	("1/sec(u) = ?", parse("cos(u)")),
 	("1/cot(u) = ?", parse("tan(u)")),
-	
+
 	# Even/Odd Formulas
 	("sin(-u) = ?", parse("-sin(u)")),
 	("cos(-u) = ?", parse("cos(u)")),
 	("tan(-u) = ?", parse("-tan(u)")),
-	
+
 	# Double Angle Formulas
 	("sin(2u) = ?", parse("2sin(u)cos(u)")),
 	("(cos(u)^2) - (sin(u)^2) = ?", parse("cos(2u)")),
 	("2(cos(u)^2) - 1 = ?", parse("cos(2u)")),
 	("1 - 2(sin(u)^2) = ?", parse("cos(2u)")),
 	("tan(2u) = ?", parse("2tan(u)/(1-(tan(u)^2))")),
-	
+
 	# Angle Conversion
 	("pi radians = ? degrees", static(180)),
 	("180 degrees = ? radians", parse("pi")),
-	
+
 	# Half Angle Formulas
 	("(1/2)(1 - cos(2u)) = ?", parse("sin(u)^2")),
 	("(1/2)(1 + cos(2u)) = ?", parse("cos(u)^2")),
 	("(1 - cos(2u))/(1 + cos(2u)) = ?", parse("tan(u)^2")),
-	
+
 	# Sum and Difference Formulas
 	("sin(a + b) = ?", parse("sin(a)cos(b) + cos(a)sin(b)")),
 	("cos(a + b) = ?", parse("cos(a)cos(b) - sin(a)sin(b)")),
 	("tan(a + b) = ?", parse("(tan(a) + tan(b))/(1 - tan(a)tan(b))")),
-	
+
 	# Product to Sum Formulas
 	("sin(a)sin(b) = ?", parse("(1/2)(cos(a - b) - cos(a + b))")),
 	("cos(a)cos(b) = ?", parse("(1/2)(cos(a - b) + cos(a + b))")),
 	("sin(a)cos(b) = ?", parse("(1/2)(sin(a + b) + sin(a - b))")),
 	("cos(a)sin(b) = ?", parse("(1/2)(sin(a + b) - sin(a - b))")),
-	
+
 	# Sum to Product Formulas
 	("sin(a) + sin(b) = ?", parse("2sin((a + b)/2)cos((a - b)/2)")),
 	("sin(a) - sin(b) = ?", parse("2cos((a + b)/2)sin((a - b)/2)")),
 	("cos(a) + cos(b) = ?", parse("2cos((a + b)/2)cos((a - b)/2)")),
 	("cos(a) - cos(b) = ?", parse("-2sin((a + b)/2)sin((a - b)/2)")),
-	
+
 	# Cofunction Formulas
 	("sin((pi/2) - a) = ?", parse("cos(a)")),
 	("cos((pi/2) - a) = ?", parse("sin(a)")),
@@ -256,7 +256,6 @@ identities = [
 	("d/dx log_a(u) = ?", parse("du/(u * ln(a))")),
 	("d/dx e^u = ?", parse("(e^u) du")),
 	("d/dx ln(u) = ?", parse("du/u")),
-	# <Incomplete>
 
 	# Trig Differentiation
 	("d/dx sin(u) = ?", parse("cos(u) du")),
@@ -265,13 +264,11 @@ identities = [
 	("d/dx sec(u) = ?", parse("sec(u)tan(u) du")),
 	("d/dx csc(u) = ?", parse("-csc(u)cot(u) du")),
 	("d/dx cot(u) = ?", parse("-(csc(u)^2) du")),
-	
+
 	# Inverse Trig Differentiation
 	("d/dx arcsin(u) = ?", parse("1/sqrt(1-(x^2))")),
 	("d/dx arccos(u) = ?", parse("-1/sqrt(1-(x^2))")),
 	("d/dx arctan(u) = ?", parse("1/(1+(x^2))")),
-
-	# <Incomplete>
 
 	# Integration Formulas
 	# Volume, surface area, polar area, arclen, parametrics...
@@ -282,7 +279,7 @@ def generate():
 	if random.random() < 0.33:
 		return random.choice(identities)
 	else:
-		fstr, fx = func_gen(random.randint(1, 4))
+		fstr, fx = func_gen(random.randint(1, 3))
 		problem, solution = random.choice(questions)
 		question = problem.format(func_infix(fstr))
 		return question, solution(fx)
