@@ -12,7 +12,7 @@ static = lambda k: lambda x: k
 unary = {
 	"ln": math.log,
 	"exp": math.exp,
-	"abs": math.abs,
+	"abs": abs,
 	"sqrt": math.sqrt,
 	"sin": math.sin,
 	"cos": math.cos,
@@ -50,14 +50,14 @@ def VarFunc_resolver(match):
 	vf = match.group(1)
 	if vf in unary or vf in special_funcs:
 		return vf + '('
-	return vf + ' * ('
+	return vf + '*('
 
 rewrite = (
 	[r'\[', r'('],
 	[r'\]', r')'],
 	[r'\^', r'**'],
 	# "NumFunc|Var" or "Num(" or ")(" or ")Func|Var"
-	[re.compile(r'(\)|\d+)([a-z\(])'), r'\g<1> * \g<2>'],
+	[re.compile(r'(\)|\d+)([a-z\(])'), r'\g<1>*\g<2>'],
 	# "Var(" but not "Func("
 	[re.compile(r'([a-z]+)\('), VarFunc_resolver],
 )
