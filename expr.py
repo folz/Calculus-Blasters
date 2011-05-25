@@ -42,7 +42,7 @@ special = {
 for name in ["u", "n", "a", "du"]:
 	special[name] = idhash(name)
 
-special_funcs = set(["f", "g", "dx", "dg"])
+special_funcs = set(["f", "g", "f_prime", "g_prime"])
 for name in special_funcs:
 	special[name] = lambda x: x + idhash(name)
 
@@ -56,10 +56,11 @@ rewrite = (
 	[r'\[', r'('],
 	[r'\]', r')'],
 	[r'\^', r'**'],
-	# "NumFunc|Var" or "Num(" or ")(" or ")Func|Var"
-	[re.compile(r'(\)|\d+)([a-z\(])'), r'\g<1>*\g<2>'],
+	[r'\'', r'_prime'],
 	# "Var(" but not "Func("
-	[re.compile(r'([a-z]+)\('), VarFunc_resolver],
+	[re.compile(r'([a-z_\']+)\('), VarFunc_resolver],
+	# "NumFunc|Var" or "Num(" or ")(" or ")Func|Var"
+	[re.compile(r'(\)|\d+)([a-z_\'\(])'), r'\g<1>*\g<2>'],
 )
 
 def parse(s):
@@ -185,12 +186,12 @@ identities = [
 
 	# Basic Differentiation
 	("d/dx a = ?", static(0)),
-	("d/dx a[f(x)] = ?", parse("a[dx(x)]")),
-	("d/dx [f(x) + g(x)] = ?", parse("dx(x) + dg(x)")),
-	("d/dx f(x)g(x) = ?", parse("f(x)dg(x) + dx(x)g(x)")),
-	("d/dx f(x)/g(x) = ?", parse("[dx(x)g(x) - f(x)dg(x)] / g(x)^2")),
-	("d/dx [1 / f(x)] = ?", parse("-dx(x) / f(x)^2")),
-	("d/dx f(g(x)) = ?", parse("dx(g(x))dg(x)")),
+	("d/dx a[f(x)] = ?", parse("a[f'(x)]")),
+	("d/dx [f(x) + g(x)] = ?", parse("f'(x) + g'(x)")),
+	("d/dx f(x)g(x) = ?", parse("f(x)g'(x) + f'(x)g(x)")),
+	("d/dx f(x)/g(x) = ?", parse("[f'(x)g(x) - f(x)g'(x)] / g(x)^2")),
+	("d/dx [1 / f(x)] = ?", parse("-f'(x) / f(x)^2")),
+	("d/dx f(g(x)) = ?", parse("f'(g(x))g'(x)")),
 	("d/dx u^n = ?", parse("n(u^(n-1))")),
 	("d/dx a^u = ?", parse("ln(a)(a^u) du")),
 	("d/dx log_a(u) = ?", parse("du/(u * ln(a))")),
