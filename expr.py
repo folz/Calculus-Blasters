@@ -68,8 +68,11 @@ def parse(s):
 	s = s.replace(' ', '')
 	for rule, pattern in rewrite:
 		s = re.sub(rule, pattern, s)
-	print("I'll assume you meant to say '{0}'...".format(s))
-	return build_expr(ast.parse(s))
+	print(":: [Parser] " + s)
+	try:
+		return build_expr(ast.parse(s))
+	except:
+		return static(0)
 
 ast_hints = ast.Name, ast.Num, ast.BinOp, ast.Call, ast.UnaryOp
 
@@ -116,15 +119,16 @@ def make_binary(lhs, rhs):
 	return (name, lhs[0], rhs[0]), fx
 
 def make_var():
-	k = random.randint(2, 10)
-	return "{0}x".format(k), lambda x: k * x
+	k, expt = random.randint(2, 10), random.randint(1, 10)
+	fmt = "{0}x{1}".format(k, "^{0}".format(expt) if expt > 1 else "")
+	return fmt, lambda x: k * (x ** expt)
 
 def func_gen(size):
 	'Generate a function and its string representation given a size.'
 	prob = random.random()
-	if size <= 0 or prob < 0.25:
+	if size == 0 or prob < 0.25:
 		return make_var()
-	elif size <= 2 or prob < 0.50:
+	elif prob < 0.65:
 		return make_unary(func_gen(size - 1))
 	else:
 		return make_binary(func_gen(size // 2), func_gen(size // 2))
@@ -166,7 +170,7 @@ def derivative(fx):
 
 def integrate(fx, a, b):
 	traps = (fx(a + (b - a) * k / N) for k in range(1, N))
-	return (b - a) * (fx(a) / 2 + fx(b) / 2 + sum(traps)) / N
+	return (b - a) * (fx(a) / 2 + fx(b) / 2 + math.fsum(traps)) / N
 
 def integral(fx):
 	return lambda x: integrate(fx, 0, x)
