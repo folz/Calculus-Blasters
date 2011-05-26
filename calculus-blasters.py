@@ -19,7 +19,7 @@ class CalculusBlasters:
 		pygame.init()
 
 		self.id = id
-		
+
 		# set the dimensions of the display window
 		self.SIZE = self.WIDTH, self.HEIGHT = 800, 600
 
@@ -71,6 +71,12 @@ class CalculusBlasters:
 													( self.world.get_width() - 50,
 													self.world.get_height() - 50 )
 												, "rocketplok.gif" )
+
+		self.trolls = [entities.AIEntity("troll") for k in range(random.randint(1, 15)]
+		for k, troll in enumerate(self.trolls):
+			self.world.add_entity(troll, attrs="troll")
+			self.world.set_entity_name(troll, "troll"+str(k))
+			troll.add_gun(managers.BulletManager(troll))
 
 		self.world.add_entity( self.player1, attrs="player" )
 		self.world.set_entity_name( self.player1, "player1" )

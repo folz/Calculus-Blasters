@@ -265,7 +265,7 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		# If we're moving left or right, find out which direction and how far
 		if self.moving:
-			self.velocity += geometry.Vector( 
+			self.velocity += geometry.Vector(
 											- self.SPEED if self.facing == "left" else self.SPEED,
 											0 ) * frac( delta )
 
@@ -320,7 +320,7 @@ class PlayerEntity( entity.CollidableEntity ):
 					self.velocity.x = 0
 
 		if standing_on_something and not self.moving:
-			# If the entity has a non-zero velocity but we're not moving, slow it down 
+			# If the entity has a non-zero velocity but we're not moving, slow it down
 			if self.velocity.x < 0:
 				if self.velocity.x > PlayerEntity.SPEED * frac( delta ):
 					self.velocity += geometry.Vector( self.SPEED, 0 ) * frac( delta )
@@ -348,4 +348,24 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		entity.Entity.draw( self )
 		self.was_facing = self.facing
+
+class AIEntity(CollidableEntity):
+	STEP = 5
+
+	def __init__(self, team, **kwargs):
+		self.direction = True
+		location = geometry.Vector(
+			random.randint(0, self.world.get_width()),
+			random.randint(0, self.world.get_height())
+		)
+		PlayerEntity.__init__(self, team, location=location, kwargs)
+
+	def move(self, delta):
+		step = STEP * ppv(delta)
+		if self.location.x == 0:
+			self.direction = True # go right
+		elif self.location.x == self.world.get_width():
+			self.direction = False # go left
+		self.location.x += step * (1 if self.direction else -1)
+		self.location.y += step
 
