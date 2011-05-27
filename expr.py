@@ -4,38 +4,51 @@ import random
 import math
 import operator
 
-h = 10 ** -5
-N = int(math.sqrt(1 / h))
+try:
+        from bigfloat import *
+except:
+        from math import *
+        from operator import *
+        csc = lambda x: 1 / sin(x)
+        sec = lambda x: 1 / cos(x)
+        cot = lambda x: 1 / tan(x)
+        div = truediv
+        const_pi = lambda: math.pi
+        BigFloat = lambda x: float(x)
+        sum = fsum
+
+N = 10 ** 3
+h = 10 ** -10
 idhash = lambda s: hash(s) % (10 ** 3)
-static = lambda k: lambda x: k
+static = lambda k: lambda x: BigFloat(k)
 
 unary = {
-	"ln": math.log,
-	"exp": math.exp,
+	"ln": log,
+	"exp": exp,
 	"abs": abs,
-	"sqrt": math.sqrt,
-	"sin": math.sin,
-	"cos": math.cos,
-	"tan": math.tan,
-	"arcsin": math.asin,
-	"arccos": math.acos,
-	"arctan": math.atan,
-	"csc": lambda x: 1 / math.sin(x),
-	"sec": lambda x: 1 / math.cos(x),
-	"cot": lambda x: 1 / math.tan(x),
+	"sqrt": sqrt,
+	"sin": sin,
+	"cos": cos,
+	"tan": tan,
+	"arcsin": asin,
+	"arccos": acos,
+	"arctan": atan,
+	"csc": csc,
+	"sec": sec,
+	"cot": cot,
 }
 
 binary = {
-	ast.Add: ('+', operator.add),
-	ast.Sub: ('-', operator.sub),
-	ast.Mult: ('*', operator.mul),
-	ast.Div: ('/', operator.truediv),
-	ast.Pow: ('^', math.pow),
+	ast.Add: ('+', add),
+	ast.Sub: ('-', sub),
+	ast.Mult: ('*', mul),
+	ast.Div: ('/', div),
+	ast.Pow: ('^', pow),
 }
 
 special = {
-	"e": math.e,
-	"pi": math.pi,
+	"e": exp(1),
+	"pi": const_pi(),
 	ast.USub: lambda x: -x,
 }
 
@@ -68,7 +81,6 @@ def parse(s):
 	s = s.replace(' ', '')
 	for rule, pattern in rewrite:
 		s = re.sub(rule, pattern, s)
-	print(":: [Parser] " + s)
 	try:
 		return build_expr(ast.parse(s))
 	except:
@@ -145,10 +157,11 @@ def func_infix(elt):
 
 def equal(lhs, rhs):
 	'Compare floats for equality.'
-	return abs(lhs - rhs) < 0.005
+	return abs(lhs - rhs) < 0.001
 
-domain = [0, .5, 1, 2, 9, 16, 25, math.e, math.pi]
-domain.extend([-elt for elt in domain])
+domain = [0, .5, 1, 2, 9, special['e'], special['pi']]
+domain.extend([-n for n in domain[1:]])
+domain = [BigFloat(str(n)) for n in domain]
 
 def check(lfx, rfx):
 	'Check if two functions are equivalent.'
@@ -170,109 +183,109 @@ def derivative(fx):
 
 def integrate(fx, a, b):
 	traps = (fx(a + (b - a) * k / N) for k in range(1, N))
-	return (b - a) * (fx(a) / 2 + fx(b) / 2 + math.fsum(traps)) / N
+	return (b - a) * (fx(a) / 2 + fx(b) / 2 + sum(traps)) / N
 
 def integral(fx):
 	return lambda x: integrate(fx, 0, x)
 
 questions = [
-	("f(x) = {0}. f'(x) = ?", derivative),
-	("f(x) = {0}. f''(x) = ?", lambda fx: derivative(derivative(fx))),
-	("f(x) = {0}. F(x) = ? + C", integral),
+	("f(x) = {0}. f'(x) = ?", "d/dx f(x)", derivative),
+	("f(x) = {0}. f''(x) = ?", "d^2/dx^2 f(x)", lambda fx: derivative(derivative(fx))),
+	("f(x) = {0}. F(x) = ? + C", "integral(f(x))", integral),
 ]
 
 identities = [
 	# Pythagorean Identities
-	("sin(x)^2 + cos(x)^2 = ?", static(1)),
-	("cos(x)^2 = ?", parse("(1 + cos(2x)) / 2")),
-	("sin(x)^2 = ?", parse("(1 - cos(2x)) / 2")),
+	("sin(x)^2 + cos(x)^2 = ?", "1"),
+	("cos(x)^2 = ?", "(1 + cos(2x)) / 2"),
+	("sin(x)^2 = ?", "(1 - cos(2x)) / 2"),
 
 	# Tan/Cot Identities
-	("sin(u)/cos(u) = ?", parse("tan(u)")),
-	("cos(u)/sin(u) = ?", parse("cot(u)")),
+	("sin(u)/cos(u) = ?", "tan(u)"),
+	("cos(u)/sin(u) = ?", "cot(u)"),
 
 	# Reciprocal Identities
-	("1/sin(u) = ?", parse("csc(u)")),
-	("1/cos(u) = ?", parse("sec(u)")),
-	("1/tan(u) = ?", parse("cot(u)")),
-	("1/csc(u) = ?", parse("sin(u)")),
-	("1/sec(u) = ?", parse("cos(u)")),
-	("1/cot(u) = ?", parse("tan(u)")),
+	("1/sin(u) = ?", "csc(u)"),
+	("1/cos(u) = ?", "sec(u)"),
+	("1/tan(u) = ?", "cot(u)"),
+	("1/csc(u) = ?", "sin(u)"),
+	("1/sec(u) = ?", "cos(u)"),
+	("1/cot(u) = ?", "tan(u)"),
 
 	# Even/Odd Formulas
-	("sin(-u) = ?", parse("-sin(u)")),
-	("cos(-u) = ?", parse("cos(u)")),
-	("tan(-u) = ?", parse("-tan(u)")),
+	("sin(-u) = ?", "-sin(u)"),
+	("cos(-u) = ?", "cos(u)"),
+	("tan(-u) = ?", "-tan(u)"),
 
 	# Double Angle Formulas
-	("sin(2u) = ?", parse("2sin(u)cos(u)")),
-	("(cos(u)^2) - (sin(u)^2) = ?", parse("cos(2u)")),
-	("2(cos(u)^2) - 1 = ?", parse("cos(2u)")),
-	("1 - 2(sin(u)^2) = ?", parse("cos(2u)")),
-	("tan(2u) = ?", parse("2tan(u)/(1-(tan(u)^2))")),
+	("sin(2u) = ?", "2sin(u)cos(u)"),
+	("(cos(u)^2) - (sin(u)^2) = ?", "cos(2u)"),
+	("2(cos(u)^2) - 1 = ?", "cos(2u)"),
+	("1 - 2(sin(u)^2) = ?", "cos(2u)"),
+	("tan(2u) = ?", "2tan(u)/(1-(tan(u)^2))"),
 
 	# Angle Conversion
-	("pi radians = ? degrees", static(180)),
-	("180 degrees = ? radians", parse("pi")),
+	("pi radians = ? degrees", "180"),
+	("180 degrees = ? radians", "pi"),
 
 	# Half Angle Formulas
-	("(1/2)(1 - cos(2u)) = ?", parse("sin(u)^2")),
-	("(1/2)(1 + cos(2u)) = ?", parse("cos(u)^2")),
-	("(1 - cos(2u))/(1 + cos(2u)) = ?", parse("tan(u)^2")),
+	("(1/2)(1 - cos(2u)) = ?", "sin(u)^2"),
+	("(1/2)(1 + cos(2u)) = ?", "cos(u)^2"),
+	("(1 - cos(2u))/(1 + cos(2u)) = ?", "tan(u)^2"),
 
 	# Sum and Difference Formulas
-	("sin(a + b) = ?", parse("sin(a)cos(b) + cos(a)sin(b)")),
-	("cos(a + b) = ?", parse("cos(a)cos(b) - sin(a)sin(b)")),
-	("tan(a + b) = ?", parse("(tan(a) + tan(b))/(1 - tan(a)tan(b))")),
+	("sin(a + b) = ?", "sin(a)cos(b) + cos(a)sin(b)"),
+	("cos(a + b) = ?", "cos(a)cos(b) - sin(a)sin(b)"),
+	("tan(a + b) = ?", "(tan(a) + tan(b))/(1 - tan(a)tan(b))"),
 
 	# Product to Sum Formulas
-	("sin(a)sin(b) = ?", parse("(1/2)(cos(a - b) - cos(a + b))")),
-	("cos(a)cos(b) = ?", parse("(1/2)(cos(a - b) + cos(a + b))")),
-	("sin(a)cos(b) = ?", parse("(1/2)(sin(a + b) + sin(a - b))")),
-	("cos(a)sin(b) = ?", parse("(1/2)(sin(a + b) - sin(a - b))")),
+	("sin(a)sin(b) = ?", "(1/2)(cos(a - b) - cos(a + b))"),
+	("cos(a)cos(b) = ?", "(1/2)(cos(a - b) + cos(a + b))"),
+	("sin(a)cos(b) = ?", "(1/2)(sin(a + b) + sin(a - b))"),
+	("cos(a)sin(b) = ?", "(1/2)(sin(a + b) - sin(a - b))"),
 
 	# Sum to Product Formulas
-	("sin(a) + sin(b) = ?", parse("2sin((a + b)/2)cos((a - b)/2)")),
-	("sin(a) - sin(b) = ?", parse("2cos((a + b)/2)sin((a - b)/2)")),
-	("cos(a) + cos(b) = ?", parse("2cos((a + b)/2)cos((a - b)/2)")),
-	("cos(a) - cos(b) = ?", parse("-2sin((a + b)/2)sin((a - b)/2)")),
+	("sin(a) + sin(b) = ?", "2sin((a + b)/2)cos((a - b)/2)"),
+	("sin(a) - sin(b) = ?", "2cos((a + b)/2)sin((a - b)/2)"),
+	("cos(a) + cos(b) = ?", "2cos((a + b)/2)cos((a - b)/2)"),
+	("cos(a) - cos(b) = ?", "-2sin((a + b)/2)sin((a - b)/2)"),
 
 	# Cofunction Formulas
-	("sin((pi/2) - a) = ?", parse("cos(a)")),
-	("cos((pi/2) - a) = ?", parse("sin(a)")),
-	("tan((pi/2) - a) = ?", parse("cot(a)")),
-	("csc((pi/2) - a) = ?", parse("sec(a)")),
-	("sec((pi/2) - a) = ?", parse("csc(a)")),
-	("cot((pi/2) - a) = ?", parse("tan(a)")),
+	("sin((pi/2) - a) = ?", "cos(a)"),
+	("cos((pi/2) - a) = ?", "sin(a)"),
+	("tan((pi/2) - a) = ?", "cot(a)"),
+	("csc((pi/2) - a) = ?", "sec(a)"),
+	("sec((pi/2) - a) = ?", "csc(a)"),
+	("cot((pi/2) - a) = ?", "tan(a)"),
 
 	# Basic Differentiation
-	("d/dx a = ?", static(0)),
-	("d/dx x = ?", static(1)),
-	("d/dx a*x = ?", parse("a")),
-	("d/dx a[f(x)] = ?", parse("a[f'(x)]")),
-	("d/dx [f(x) + g(x)] = ?", parse("f'(x) + g'(x)")),
-	("d/dx f(x)g(x) = ?", parse("f(x)g'(x) + f'(x)g(x)")),
-	("d/dx f(x)/g(x) = ?", parse("[f'(x)g(x) - f(x)g'(x)] / g(x)^2")),
-	("d/dx [1 / f(x)] = ?", parse("-f'(x) / f(x)^2")),
-	("d/dx f(g(x)) = ?", parse("f'(g(x))g'(x)")),
-	("d/dx u^n = ?", parse("n(u^(n-1))")),
-	("d/dx a^u = ?", parse("ln(a)(a^u) du")),
-	("d/dx log_a(u) = ?", parse("du/(u * ln(a))")),
-	("d/dx e^u = ?", parse("(e^u) du")),
-	("d/dx ln(u) = ?", parse("du/u")),
+	("d/dx a = ?", "0"),
+	("d/dx x = ?", "1"),
+	("d/dx a*x = ?", "a"),
+	("d/dx a[f(x)] = ?", "a[f'(x)]"),
+	("d/dx [f(x) + g(x)] = ?", "f'(x) + g'(x)"),
+	("d/dx f(x)g(x) = ?", "f(x)g'(x) + f'(x)g(x)"),
+	("d/dx f(x)/g(x) = ?", "[f'(x)g(x) - f(x)g'(x)] / g(x)^2"),
+	("d/dx [1 / f(x)] = ?", "-f'(x) / f(x)^2"),
+	("d/dx f(g(x)) = ?", "f'(g(x))g'(x)"),
+	("d/dx u^n = ?", "n(u^(n-1))"),
+	("d/dx a^u = ?", "ln(a)(a^u) du"),
+	("d/dx log_a(u) = ?", "du/(u * ln(a))"),
+	("d/dx e^u = ?", "(e^u) du"),
+	("d/dx ln(u) = ?", "du/u"),
 
 	# Trig Differentiation
-	("d/dx sin(u) = ?", parse("cos(u) du")),
-	("d/dx cos(u) = ?", parse("-sin(u) du")),
-	("d/dx tan(u) = ?", parse("(sec(u)^2) du")),
-	("d/dx sec(u) = ?", parse("sec(u)tan(u) du")),
-	("d/dx csc(u) = ?", parse("-csc(u)cot(u) du")),
-	("d/dx cot(u) = ?", parse("-(csc(u)^2) du")),
+	("d/dx sin(u) = ?", "cos(u) du"),
+	("d/dx cos(u) = ?", "-sin(u) du"),
+	("d/dx tan(u) = ?", "(sec(u)^2) du"),
+	("d/dx sec(u) = ?", "sec(u)tan(u) du"),
+	("d/dx csc(u) = ?", "-csc(u)cot(u) du"),
+	("d/dx cot(u) = ?", "-(csc(u)^2) du"),
 
 	# Inverse Trig Differentiation
-	("d/dx arcsin(u) = ?", parse("1/sqrt(1-(x^2))")),
-	("d/dx arccos(u) = ?", parse("-1/sqrt(1-(x^2))")),
-	("d/dx arctan(u) = ?", parse("1/(1+(x^2))")),
+	("d/dx arcsin(u) = ?", "1/sqrt(1-(x^2))"),
+	("d/dx arccos(u) = ?", "-1/sqrt(1-(x^2))"),
+	("d/dx arctan(u) = ?", "1/(1+(x^2))"),
 
 	# Integration Formulas
 	# Volume, surface area, polar area, arclen, parametrics...
@@ -281,21 +294,22 @@ identities = [
 def generate():
 	'Generate a word problem and its solution.'
 	if random.random() < 0.33:
-		return random.choice(identities)
+		prob, soln = random.choice(identities)
+		return prob, soln, parse(soln)
 	else:
 		fstr, fx = func_gen(random.randint(1, 3))
-		problem, solution = random.choice(questions)
-		question = problem.format(func_infix(fstr))
-		return question, solution(fx)
+		problem, soln, solution = random.choice(questions)
+		prob = problem.format(func_infix(fstr))
+		return prob, soln, solution(fx)
 
 def repl():
 	print("Calculus Blasters (REPL)")
 	while True:
-		prob, soln = generate()
+		prob, soln, sfx = generate()
 		print("\nCalculus> " + prob)
 		fx = parse(input("Blast> "))
-		if check(fx, soln):
+		if check(fx, sfx):
 			print("Correct!")
 		else:
-			action = input("Incorrect. Override (y/n)? ")
+			action = input("Incorrect (expected {0}). Override (y/n)? ".format(soln))
 			print("OK. My bad." if 'y' in action.lower() else "Moving on then...")

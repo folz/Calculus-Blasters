@@ -90,7 +90,7 @@ class Polygon:
 			point = self.points[i]
 			next_point = self.points[( i + 1 ) % len( self.points )]
 			self.edges.append( next_point - point )
-
+		
 	def __getitem__( self, i ):
 		return self.points[i]
 
@@ -247,17 +247,27 @@ class Terrain( Polygon ):
 		Polygon.__init__( self, points, ( 0, 0 ) )
 		self.world = world
 		self.location = Vector( points[0][0], points[0][1] )
-		self.width = abs( points[0][0] - points[1][0] )
-		self.height = abs( points[0][1] - points[2][1] )
-
+		
+		self.leftmost_x = self.points[0].x
+		self.rightmost_x = self.points[0].x
+		self.topmost_y = self.points[0].y
+		self.bottommost_y = self.points[0].y
+		for p in self.points:
+			if p.x < self.leftmost_x:
+				self.leftmost_x = p.x
+			if p.x > self.rightmost_x:
+				self.rightmost_x = p.x 
+			if p.y < self.topmost_y:
+				self.topmost_y = p.y
+			if p.y > self.bottommost_y:
+				self.bottommost_y = p.y
+		
 	def debug( self ):
-		if not self.is_on_screen(): return
 		pygame.draw.polygon( self.world, ( 255, 255, 255 ), self.real_points )
 
 	def set_world_callback( self, world ):
 		self.world = world
 
 	def is_on_screen( self ):
-		return self.location.x + self.width >= self.world.viewport.get_x_coord() and self.location.x <= self.world.viewport.get_x_coord() + self.world.get_width() and self.location.y + self.height >= self.world.viewport.get_y_coord() and self.location.y <= self.world.viewport.get_y_coord() + self.world.get_height()
-
-
+		return self.rightmost_x > self.world.viewport.get_x_coord()\
+			and self.leftmost_x < self.world.viewport.get_x_coord() + self.world.get_size()[0]
