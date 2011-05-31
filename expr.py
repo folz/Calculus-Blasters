@@ -12,12 +12,12 @@ try:
 except:
 	from math import *
 	from operator import *
+	BigFloat = float
 	const_pi = lambda: pi
 	div, sum = truediv, fsum
 	csc = lambda x: 1 / sin(x)
 	sec = lambda x: 1 / cos(x)
 	cot = lambda x: 1 / tan(x)
-	BigFloat = lambda x: float(x)
 
 N = 10 ** 3
 h = 10 ** -10
@@ -87,12 +87,17 @@ rewrite = (
 	[re.compile(r'([a-z_]+)\s+([a-z_]+|\d+)'), Funcall_resolver],
 )
 
+def rewrite_terms(s):
+	new = s
+	for rule, pattern in rewrite:
+		new = re.sub(rule, pattern, new)
+	return new if new == s else rewrite_terms(new)
+
 def parse(s):
 	'Create a nested-lambda expression from a string.'
-	for rule, pattern in rewrite:
-		s = re.sub(rule, pattern, s)
+	s = rewrite_terms(s)
 	try:
-		# print("[Parser] " + s)
+		print("[Parser] " + s)
 		return build_expr(ast.parse(s))
 	except:
 		return static(float('inf'))
