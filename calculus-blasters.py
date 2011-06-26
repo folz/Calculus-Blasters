@@ -4,6 +4,8 @@ Created on Jun 23, 2010
 @author: folz
 '''
 
+import random
+
 from engine import *
 from engine.misc import *
 

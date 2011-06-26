@@ -198,7 +198,7 @@ def derivative(fx):
 
 def integrate(fx, a, b):
 	traps = (fx(a + (b - a) * k / N) for k in range(1, N))
-	return (b - a) * (fx(a) / 2 + fx(b) / 2 + sum(traps)) / N
+	return (b - a) * (fx(a) / 2 + fx(b) / 2 + math.fsum(traps)) / N
 
 def integral(fx):
 	return lambda x: integrate(fx, 0, x)

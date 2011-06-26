@@ -145,4 +145,3 @@ class CollidableEntity( ImageEntity ):
 		This should be overridden by subclasses
 		'''
 		pass
-

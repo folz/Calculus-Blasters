@@ -204,3 +204,4 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		entity.Entity.draw( self )
 		self.was_facing = self.facing
+
