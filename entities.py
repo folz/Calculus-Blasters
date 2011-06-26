@@ -4,7 +4,7 @@ Created on Jun 24, 2010
 @author: folz
 '''
 
-import math, pygame, sys
+import math, pygame, sys, random
 from pygame.locals import *
 from engine import *
 
@@ -14,154 +14,9 @@ def frac( delta ):
 def ppv( delta ):
 	return entity.Entity.PIXELSPERVECTOR / delta
 
-class BulletEntity( entity.CollidableEntity ):
-	'''
-	A Bullet is something you shoot. It is handled by a BulletManager
-	'''
-
-	MAX_SPEED_X = 5
-	MAX_SPEED_Y = 5
-
-	def __init__( self, location, velocity, facing ):
-		'''
-		Constructor
-		'''
-		entity.Entity.__init__( self, "bullet.png", location, velocity )
-		if facing == "left":
-			self.image = pygame.transform.flip( self.image, True, False )
-		self.used = False
-		self.sent = False
-		self.rect = pygame.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-
-	def setBulletManagerCallback( self, bulletmanager ):
-		self.bulletmanager = bulletmanager
-
-	def networkBullet( self ):
-		p2 = self.world.get_entity_by_name( "player2" )
-		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-		mtd = p2.bounding_poly.collide( self.bounding_poly )
-		if mtd != False:
-			p2.take_hit()
-			self.used = True
-
-	def move( self, delta ):
-		if( self.velocity.x == 0 ):
-			return
-
-		self.networkBullet()
-
-		if self.used:
-			self.bulletmanager.remove_bullet( self )
-			del self
-			return
-
-		if self.velocity.x > self.MAX_SPEED_X:
-			self.velocity.x = self.MAX_SPEED_X
-		if self.velocity.x < -self.MAX_SPEED_X:
-			self.velocity.x = -self.MAX_SPEED_X
-		if self.velocity.y > self.MAX_SPEED_Y:
-			self.velocity.y = self.MAX_SPEED_Y
-		if self.velocity.y < -self.MAX_SPEED_Y:
-			self.velocity.y = -self.MAX_SPEED_Y
-
-		self.location.x += self.velocity.x * ( entity.Entity.PIXELSPERVECTOR / delta )
-		self.location.y += self.velocity.y * ( entity.Entity.PIXELSPERVECTOR / delta )
-
-		self.rect = pygame.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-
-		if self.location.x < 0 or self.location.x > self.world.get_width() or self.location.y < 0 or self.location.y > self.world.get_height():
-			self.bulletmanager.bullets.remove( self )
-
-	def check_collisions( self, delta ):
-		if not self.used:
-			self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-			for terrain in self.world.get_terrain():
-				mtd = self.bounding_poly.collide( terrain )
-				if mtd != False:
-					self.used = True
-		else:
-			self.bulletmanager.remove_bullet( self )
-			del self
-
-class FlagEntity( entity.CollidableEntity ):
-
-	def __init__( self, team, location=geometry.Vector( 0, 0 ), velocity=geometry.Vector( 0, 0 ) ):
-		'''
-		Constructor
-		'''
-		self.start = geometry.Vector( location[0], location[1] )
-		entity.Entity.__init__( self, "flag_%s.png" % team, location, velocity )
-		self.facing = "right"
-		self.was_facing = self.facing
-		self.team = team
-		self.captured = False
-		self.capturer = None
-		self.scale = 1
-		self.score = 0
-
-	def set_facing( self, newFacing ):
-		self.was_facing = self.facing
-		self.facing = newFacing
-
-	def was_captured_by( self, entity ):
-		self.captured = True
-		self.capturer = entity
-		self.capturer.flag1 = self
-
-	def release( self ):
-		if self.capturer is not None:
-			self.capturer.flag1 = None
-			self.capturer.has_flag = False
-		self.facing = "right"
-		self.captured = False
-		self.capturer = None
-		self.location = self.start.copy()
-
-	def move( self, delta ):
-		if self.captured and self.capturer != None:
-			pass
-
-	def update_score( self, score ):
-		self.score = score
-
-	def check_collisions( self, delta ):
-		self.bounding_poly = geometry.Rect( self.location.x, self.location.y, self.get_width(), self.get_height() )
-		if not self.captured:
-			for player in self.world.get_entities_by_attribute( "player" ):
-				if player.team != self.team:
-					mtd = self.bounding_poly.collide( player.bounding_poly )
-					if mtd != False:
-						self.was_captured_by( player )
-						player.has_flag = True
-						print( "captured" )
-				else:
-					mtd = self.bounding_poly.collide( player.bounding_poly )
-					if mtd != False and player.has_flag and self.captured == False:
-						player.flag1.release()
-						self.score += 1
-						print( "SCORED" )
-
-
-		else:
-			if self.capturer.facing == "left":
-				self.location.x = self.capturer.location.x + self.capturer.get_width() / 2
-				self.location.y = self.capturer.location.y
-			elif self.capturer.facing == "right":
-				self.location.x = self.capturer.location.x - self.capturer.get_width() / 2
-				self.location.y = self.capturer.location.y
-
-		self.rect = pygame.Rect( self.bounding_poly.real_points[0][0], self.bounding_poly.real_points[0][1], self.bounding_poly.width, self.bounding_poly.height )
-
-	def draw( self ):
-		if self.facing == "right" and self.scale == -1:
-			self.image = pygame.transform.flip( self.image, True, False )
-			self.scale = 1
-		elif self.facing == "left" and self.scale == 1:
-			self.image = pygame.transform.flip( self.image, True, False )
-			self.scale = -1
-
-		entity.Entity.draw( self )
-		self.was_facing = self.facing
+class AsteroidEntity( entity.Entity ):
+	def __init__( self ):
+		return
 
 class PlayerEntity( entity.CollidableEntity ):
 	'''
@@ -242,7 +97,7 @@ class PlayerEntity( entity.CollidableEntity ):
 
 	def debug( self, prnt ):
 		return
-		if self.team == "blue":
+		if self.team == "red":
 			print( prnt )
 
 	def shoot( self ):
@@ -265,7 +120,7 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		# If we're moving left or right, find out which direction and how far
 		if self.moving:
-			self.velocity += geometry.Vector( 
+			self.velocity += geometry.Vector(
 											- self.SPEED if self.facing == "left" else self.SPEED,
 											0 ) * frac( delta )
 
@@ -318,9 +173,10 @@ class PlayerEntity( entity.CollidableEntity ):
 					self.velocity.x = 0
 				elif self.bounding_poly.isLeft == False: #if we're to the right of whatever we're colliding with
 					self.velocity.x = 0
+				break
 
 		if standing_on_something and not self.moving:
-			# If the entity has a non-zero velocity but we're not moving, slow it down 
+			# If the entity has a non-zero velocity but we're not moving, slow it down
 			if self.velocity.x < 0:
 				if self.velocity.x > PlayerEntity.SPEED * frac( delta ):
 					self.velocity += geometry.Vector( self.SPEED, 0 ) * frac( delta )
@@ -348,4 +204,3 @@ class PlayerEntity( entity.CollidableEntity ):
 
 		entity.Entity.draw( self )
 		self.was_facing = self.facing
-

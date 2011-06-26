@@ -1,4 +1,3 @@
 To get Calculus Blasters working:
-1) Run multiplayer.py
-2) Run calculus-blasters.py
-3) Make sure you don't enter the same ID for both players
+	Install pygame
+	Run calculus-blasters.py

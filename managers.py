@@ -10,9 +10,9 @@ from engine import *
 from engine.misc import *
 from entities import *
 
-class BulletManager:
+class AsteroidManager:
 
-	def __init__( self, entity ):
+	def __init__( self ):
 		self.entity = entity
 		self.lastshot = pygame.time.get_ticks()
 		self.bullets = []
@@ -31,37 +31,6 @@ class BulletManager:
 			b.set_world_callback( self.entity.world )
 			b.setBulletManagerCallback( self )
 
-	def remove_bullet( self, bullet ):
-		if bullet in self.bullets:
-			self.bullets.remove( bullet )
-			del bullet
-
-class NetworkBulletManager:
-
-	def __init__( self, world ):
-		self.world = world
-		self.bullets = []
-
-	def fromNetwork( self, bullets ):
-		if len( bullets ) == 0: return
-		for b in self.bullets:
-			self.remove_bullet( b )
-		for b in bullets:
-			self.add_bullet( geometry.Vector( b[0], b[1] ) )
-
-	def draw( self ):
-		for b in self.bullets:
-			b.draw()
-
-	def add_bullet( self, location ):
-		b = BulletEntity( location, ( 0, 0 ), "right" )
-		self.bullets.append( b )
-		b.set_world_callback( self.world )
-		b.setBulletManagerCallback( self )
-		b.draw()
-
-	def remove_bullet( self, bullet ):
-		if bullet in self.bullets:
-			self.bullets.remove( bullet )
-			del bullet
-
+	def remove_asteroid( self, asteroid ):
+		if asteroid in self.bullets:
+			self.bullets.remove( asteroid )
