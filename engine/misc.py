@@ -9,6 +9,7 @@ miscellaneous functions and constants that save me time
 import pygame
 import os.path
 
+DATA_LOC = os.path.join("..","data")
 PIXELS_PER_VECTOR = 100
 
 def load_image( name ):
@@ -16,7 +17,7 @@ def load_image( name ):
 	Load image from its location and return it
 	@param name: the string location of the image
 	'''
-	name = os.path.join( "data", name )
+	name = os.path.join( DATA_LOC, name )
 	try:
 		image = pygame.image.load( name )
 		if image.get_alpha is None:
@@ -33,7 +34,7 @@ def load_sound( name ):
 	Load sound from its location and return it
 	@param name: the string location of the sound
 	'''
-	name = os.path.join( "data", name )
+	name = os.path.join( DATA_LOC, name )
 	try:
 		sound = pygame.mixer.Sound( name )
 	except pygame.error as message:
