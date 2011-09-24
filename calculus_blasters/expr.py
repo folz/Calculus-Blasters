@@ -3,9 +3,6 @@ import ast
 import sys
 import random
 
-if sys.version_info.major < 3:
-	print("You need a Python 3 interpreter to run this code.")
-	exit(-1)
 
 try:
 	from bigfloat import *
@@ -198,7 +195,7 @@ def derivative(fx):
 
 def integrate(fx, a, b):
 	traps = (fx(a + (b - a) * k / N) for k in range(1, N))
-	return (b - a) * (fx(a) / 2 + fx(b) / 2 + math.fsum(traps)) / N
+	return (b - a) * (fx(a) / 2 + fx(b) / 2 + fsum(traps)) / N
 
 def integral(fx):
 	return lambda x: integrate(fx, 0, x)
@@ -330,4 +327,8 @@ def repl():
 			print("OK. My bad." if 'y' in action.lower() else "Moving on then...")
 
 if __name__ == '__main__':
+	if sys.version_info.major < 3:
+		print("You need a Python 3 interpreter to run this code.")
+		exit(-1)
+
 	repl()
