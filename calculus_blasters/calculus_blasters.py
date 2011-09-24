@@ -4,8 +4,6 @@ Created on Jun 23, 2010
 @author: folz
 '''
 
-import random, os, time, imp, sys
-
 from engine import *
 from engine.misc import *
 
@@ -51,21 +49,30 @@ class CalculusBlasters:
 		# create the viewport that will view the world
 		self.viewport = viewport.Viewport( self.window, self.world )
 
-		question_text, answer_text, null = expr.generate()
-		self.question = entity.SentenceEntity( ( 177, 450 ), question_text, size=20 )
-		self.answer = entity.SentenceEntity( ( 178, 522 ), answer_text, size=20 )
+		self.question_text, self.answer_text, self.null = expr.generate()
+		self.question = entity.SentenceEntity( ( 177, 450 ), self.question_text, size=20 )
+		self.answer = entity.SentenceEntity( ( 178, 522 ), self.answer_text, size=20 )
 		self.world.add_entity( self.question )
 		self.world.add_entity( self.answer )
 
 		self.delta = 0.0
 		self.fps_count = 0.0
 
-		''' for checking for file modifications '''
-		self.before = {f : os.stat( f ).st_mtime for f in os.listdir( '.' ) }
-
 		self.running = True
 		while self.running:
 			self.game_loop()
+
+	def regenerate_problem( self ):
+		try:
+			self.question.remove()
+			self.answer.remove()
+		except:
+			pass
+		self.question_text, self.answer_text, null = expr.generate()
+		self.question = entity.SentenceEntity( ( 177, 450 ), self.question_text, size=20 )
+		self.answer = entity.SentenceEntity( ( 178, 522 ), self.answer_text, size=20 )
+		self.world.add_entity( self.question )
+		self.world.add_entity( self.answer )
 
 	def handle_events( self ):
 		for event in pygame.event.get():
@@ -87,36 +94,17 @@ class CalculusBlasters:
 		if keyEvent.type == pygame.KEYDOWN:
 			if key == pygame.K_BACKSPACE:
 				self.answer.backspace()
+			elif key == pygame.K_RETURN:
+				print( expr.check( self.answer_text, self.answer.text ) )
 			else:
 				self.answer.type( keyEvent.unicode )
-		#if keyEvent.type == pygame.KEYUP:
-		#	self.keys[key] = False
 
 	def do_logic( self ):
 		if self.keys[pygame.K_ESCAPE]:
 			pygame.event.post( pygame.event.Event( pygame.QUIT ) )
 
-	def hotload( self ):
-		after = { f : os.stat( f ).st_mtime for f in os.listdir( '.' ) }
-		added = [f for f in after
-					if not f in self.before]
-		removed = [f for f in self.before
-					if not f in after]
-		modified = [f for f in self.before
-					if f not in removed and self.before[f] < after[f]]
-		if added or removed or modified:
-			for mod in sys.modules:
-				try:
-					pygame.quit()
-					imp.reload(sys.modules[mod])
-					CalculusBlasters()
-				except:
-					print("Could not load mod {0}".format(mod))
-		self.before = after
-	
 	def game_loop( self ):
 		# Timing controls
-		self.hotload()
 
 		self.delta = self.clock.tick()
 		self.fps_count += self.delta
@@ -136,3 +124,4 @@ class CalculusBlasters:
 
 if __name__ == "__main__":
 	CalculusBlasters()
+
